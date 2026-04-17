@@ -1,6 +1,7 @@
 package ru.mireadev.coffeeshop.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import ru.mireadev.coffeeshop.entity.Role
 
 data class LoginResponse(
     @field:Schema(description = "ID пользователя", example = "123")
@@ -13,5 +14,8 @@ data class LoginResponse(
     val email: String,
 
     @field:Schema(description = "Имя", example = "Иван Иванов")
-    val name: String
+    val name: String,
+
+    @field:Schema(description = "Роль пользователя", example = "BUYER")
+    val role: Role
 )

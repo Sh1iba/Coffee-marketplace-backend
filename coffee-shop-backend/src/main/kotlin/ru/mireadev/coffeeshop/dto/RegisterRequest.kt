@@ -2,6 +2,7 @@ package ru.mireadev.coffeeshop.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Email
+import ru.mireadev.coffeeshop.entity.Role
 
 @Schema(description = "Запрос на регистрацию пользователя")
 data class RegisterRequest(
@@ -14,5 +15,8 @@ data class RegisterRequest(
     val password: String,
 
     @field:Schema(description = "Имя", example = "Иван Иванов", required = true)
-    val name: String
+    val name: String,
+
+    @field:Schema(description = "Роль пользователя: BUYER, SELLER", example = "BUYER", required = false)
+    val role: Role = Role.BUYER
 )

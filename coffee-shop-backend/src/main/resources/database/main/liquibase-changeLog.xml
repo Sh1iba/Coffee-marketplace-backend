@@ -17,5 +17,7 @@
     <include file="v-1.0/2025-11-18--01-initial-schema-coffee-cart.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2025-01-15--01-initial-schema-orders.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2025-01-15--02-initial-schema-order-items.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-04-13--01-add-role-to-users.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-04-13--02-initial-schema-sellers.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

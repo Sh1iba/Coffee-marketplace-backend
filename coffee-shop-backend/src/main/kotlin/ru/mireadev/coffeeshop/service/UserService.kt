@@ -38,16 +38,17 @@ class UserService(
             email = request.email,
             passwordHash = passwordEncoder.encode(request.password),
             name = request.name,
+            role = request.role
         )
 
         val savedUser = userRepository.save(user)
-
 
         return RegistrationResult.Success(
             RegisterResponse(
                 userID = savedUser.id,
                 name = savedUser.name,
                 email = savedUser.email,
+                role = savedUser.role
             )
         )
     }
@@ -83,7 +84,8 @@ class UserService(
                 userId = user.id,
                 token = "Bearer " + jwtService.generateToken(userDetails),
                 name = user.name,
-                email = user.email
+                email = user.email,
+                role = user.role
             )
         )
     }
