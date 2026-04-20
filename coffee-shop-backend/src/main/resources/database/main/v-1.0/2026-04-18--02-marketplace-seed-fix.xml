@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <changeSet id="marketplace-seed-fix-v2" author="Ibrogimov Zafar">
+
+        <!-- Расширяем колонку size для поддержки длинных строк (Двойная, Маленький и т.д.) -->
+        <modifyDataType tableName="product_variants" columnName="size" newDataType="varchar(20)"/>
+
+        <!-- Очищаем все данные продуктов для чистого старта -->
+        <sql>SET FOREIGN_KEY_CHECKS=0</sql>
+        <delete tableName="cart_items"/>
+        <delete tableName="favorite_products"/>
+        <delete tableName="product_variants"/>
+        <delete tableName="products"/>
+        <delete tableName="sellers"/>
+        <sql>DELETE FROM users WHERE email IN ('urbanbrew@mail.ru','boulangerie@mail.ru','freshbites@mail.ru','spiceroute@mail.ru','greenbowl@mail.ru')</sql>
+        <sql>SET FOREIGN_KEY_CHECKS=1</sql>
+
+        <!-- Обновляем категории -->
+        <sql>UPDATE product_categories SET type='Кофе'     WHERE id=1</sql>
+        <sql>UPDATE product_categories SET type='Напитки'  WHERE id=2</sql>
+        <sql>UPDATE product_categories SET type='Выпечка'  WHERE id=3</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Сандвичи' WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Сандвичи')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Десерты'  WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Десерты')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Завтраки' WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Завтраки')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Специи'   WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Специи')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Салаты'   WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Салаты')</sql>
+
+        <!-- ── Продавцы: создаём пользователей ──────────────────────────────── -->
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('urbanbrew@mail.ru',  'Артём Кофейников',  '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('boulangerie@mail.ru','Мария Булочкина',   '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('freshbites@mail.ru', 'Дмитрий Свежев',   '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('spiceroute@mail.ru', 'Алия Пряникова',   '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('greenbowl@mail.ru',  'Никита Зеленцов',  '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
+
+        <!-- ── Продавцы: создаём магазины ──────────────────────────────────── -->
+        <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'Urban Brew', 'Авторский кофе из зёрен со всего мира. Каждая чашка — история о вкусе и качестве.', 'Кофейня', 4.9, true FROM users WHERE email='urbanbrew@mail.ru'</sql>
+        <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'La Boulangerie', 'Свежая французская выпечка и изысканные десерты по рецептам парижских кондитеров.', 'Пекарня', 4.8, true FROM users WHERE email='boulangerie@mail.ru'</sql>
+        <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'Fresh Bites', 'Сытные сэндвичи и завтраки из свежих локальных продуктов. Быстро, вкусно, полезно.', 'Кухня', 4.7, true FROM users WHERE email='freshbites@mail.ru'</sql>
+        <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'Spice Route', 'Восточные специи и блюда с ароматом далёких стран. Откройте мир новых вкусов.', 'Восточная кухня', 4.6, true FROM users WHERE email='spiceroute@mail.ru'</sql>
+        <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'Green Bowl', 'Свежие салаты, боулы и полезная еда для тех, кто заботится о здоровье.', 'Здоровое питание', 4.8, true FROM users WHERE email='greenbowl@mail.ru'</sql>
+
+        <!-- ── Сохраняем ID продавцов в переменные ──────────────────────────── -->
+        <sql>SET @urban   = (SELECT id FROM sellers WHERE name='Urban Brew')</sql>
+        <sql>SET @boul    = (SELECT id FROM sellers WHERE name='La Boulangerie')</sql>
+        <sql>SET @fresh   = (SELECT id FROM sellers WHERE name='Fresh Bites')</sql>
+        <sql>SET @spice   = (SELECT id FROM sellers WHERE name='Spice Route')</sql>
+        <sql>SET @green   = (SELECT id FROM sellers WHERE name='Green Bowl')</sql>
+
+        <!-- ── Сохраняем ID категорий ──────────────────────────────────────── -->
+        <sql>SET @cat_coffee   = (SELECT id FROM product_categories WHERE type='Кофе')</sql>
+        <sql>SET @cat_drinks   = (SELECT id FROM product_categories WHERE type='Напитки')</sql>
+        <sql>SET @cat_bakery   = (SELECT id FROM product_categories WHERE type='Выпечка')</sql>
+        <sql>SET @cat_sandwich = (SELECT id FROM product_categories WHERE type='Сандвичи')</sql>
+        <sql>SET @cat_dessert  = (SELECT id FROM product_categories WHERE type='Десерты')</sql>
+        <sql>SET @cat_breakfast= (SELECT id FROM product_categories WHERE type='Завтраки')</sql>
+        <sql>SET @cat_spice    = (SELECT id FROM product_categories WHERE type='Специи')</sql>
+        <sql>SET @cat_salad    = (SELECT id FROM product_categories WHERE type='Салаты')</sql>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ── Urban Brew: кофе и напитки (6 товаров) ─────────────────────── -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_coffee, 'Раф Кофе',      'Нежный эспрессо со взбитыми сливками и ванильным сахаром — бархатный вкус в каждом глотке.',  'raf.jpg',            @urban)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_coffee, 'Эспрессо',      'Классический итальянский эспрессо из отборных зёрен с насыщенным ароматом и плотной крема.', 'espresso.jpg',       @urban)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_coffee, 'Американо',     'Эспрессо с горячей водой — мягкий ароматный напиток для бодрого старта дня.',                  'americano.jpg',      @urban)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_coffee, 'Матча Латте',   'Японский чай матча со взбитым молоком — нежный вкус с лёгкой травяной ноткой.',                'matcha.jpg',         @urban)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_drinks, 'Айс Латте',     'Охлаждённый эспрессо с холодным молоком и льдом. Идеален для жаркого дня.',                    'iced_latte.jpg',     @urban)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_drinks, 'Нитро Колд Брю','Колд брю под давлением азота — кремовая текстура и мягкий вкус без горечи.',                   'nitro_cold_brew.jpg',@urban)</sql>
+
+        <!-- ── Urban Brew: варианты (S / M / L) -->
+        <sql>SET @p = (SELECT id FROM products WHERE name='Раф Кофе'      AND seller_id=@urban)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',249.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',299.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',349.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Эспрессо'      AND seller_id=@urban)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',149.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',189.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',229.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Американо'     AND seller_id=@urban)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',159.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',199.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',239.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Матча Латте'   AND seller_id=@urban)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',269.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',319.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',369.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Айс Латте'     AND seller_id=@urban)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',239.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',289.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',339.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Нитро Колд Брю' AND seller_id=@urban)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',279.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',329.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',379.00)</sql>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ── La Boulangerie: выпечка и десерты (6 товаров) ──────────────── -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_bakery,  'Круасан классик',    'Слоёный маслянистый круасан из французского теста с хрустящей золотистой корочкой.',      'croissant.jpg',       @boul)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_bakery,  'Миндальный круасан', 'Круасан с нежной миндальной начинкой и посыпкой из лепестков миндаля.',                   'almond_croissant.jpg',@boul)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_bakery,  'Синабон',            'Мягкая булочка с корицей, политая сливочной глазурью. Классика американских кофеен.',     'cinnamon_roll.jpg',   @boul)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_bakery,  'Маффин с черникой',  'Пышный маффин с сочными ягодами черники и хрустящей сахарной корочкой.',                  'blueberry_muffin.jpg',@boul)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_dessert, 'Эклер ванильный',   'Классический французский эклер с нежным ванильным кремом и шоколадной глазурью.',          'eclair.jpg',          @boul)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_dessert, 'Тарт с лимоном',    'Хрустящая песочная корзиночка с кремом лимон-курд и нежной итальянской меренгой.',         'lemon_tart.jpg',      @boul)</sql>
+
+        <!-- ── La Boulangerie: варианты (Штука / Двойная) -->
+        <sql>SET @p = (SELECT id FROM products WHERE name='Круасан классик'    AND seller_id=@boul)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Штука',  189.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная',329.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Миндальный круасан' AND seller_id=@boul)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Штука',  229.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная',399.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Синабон'            AND seller_id=@boul)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Штука',  249.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная',439.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Маффин с черникой'  AND seller_id=@boul)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Штука',  179.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная',299.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Эклер ванильный'    AND seller_id=@boul)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Штука',  219.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная',389.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Тарт с лимоном'     AND seller_id=@boul)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Штука',  259.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная',459.00)</sql>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ── Fresh Bites: сэндвичи и завтраки (6 товаров) ───────────────── -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_sandwich,  'Клаб Сэндвич',      'Многослойный сэндвич с куриным филе, беконом, томатами, листьями салата и фирменным соусом.','club_sandwich.jpg',  @fresh)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_sandwich,  'Сэндвич с лососем', 'Багет с нежным слабосолёным лососем, сливочным сыром, каперсами и свежим огурцом.',          'salmon_sandwich.jpg',@fresh)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_sandwich,  'Авокадо Тост',      'Хрустящий тост с кремом из авокадо, яйцом пашот, чили и микрозеленью.',                      'avocado_toast.jpg',  @fresh)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_breakfast, 'Эгг Бенедикт',      'Английский маффин с ветчиной, яйцом пашот и нежным соусом голландез.',                       'eggs_benedict.jpg',  @fresh)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_breakfast, 'Панкейки',          'Воздушные американские панкейки с кленовым сиропом и свежими сезонными ягодами.',             'pancakes.jpg',       @fresh)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_breakfast, 'Овсяная Каша',      'Нежная каша на молоке с орехами, мёдом, сезонными ягодами и семенами чиа.',                   'oatmeal.jpg',        @fresh)</sql>
+
+        <!-- ── Fresh Bites: варианты (Порция / Двойная) -->
+        <sql>SET @p = (SELECT id FROM products WHERE name='Клаб Сэндвич'      AND seller_id=@fresh)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Порция',  399.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная', 699.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Сэндвич с лососем' AND seller_id=@fresh)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Порция',  449.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная', 799.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Авокадо Тост'      AND seller_id=@fresh)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Порция',  349.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная', 599.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Эгг Бенедикт'      AND seller_id=@fresh)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Порция',  479.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная', 859.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Панкейки'          AND seller_id=@fresh)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Порция',  329.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная', 579.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Овсяная Каша'      AND seller_id=@fresh)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Порция',  259.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Двойная', 459.00)</sql>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ── Spice Route: восточная кухня (6 товаров) ────────────────────── -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_spice,    'Хумус классик',   'Нежный хумус из нута с оливковым маслом, паприкой и свежим питой.',                                  'hummus.jpg',        @spice)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_spice,    'Фалафель',        'Хрустящие шарики из нута и пряных трав с соусом тахини и свежими овощами.',                           'falafel.jpg',       @spice)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_sandwich, 'Шаурма',          'Лаваш с сочной курицей, свежими овощами, зеленью и фирменным чесночным соусом.',                       'shawarma.jpg',      @spice)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_spice,    'Баба Гануш',      'Пюре из запечённых баклажанов с тахини, лимоном и чесноком — восточный деликатес.',                    'baba_ganoush.jpg',  @spice)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_dessert,  'Пахлава',         'Слоёное тесто с медовой пропиткой и грецкими орехами — традиционный восточный десерт.',                 'baklava.jpg',       @spice)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_drinks,   'Чай Масала',      'Ароматный чай со смесью восточных специй: кардамон, имбирь, корица и гвоздика.',                       'masala_tea.jpg',    @spice)</sql>
+
+        <!-- ── Spice Route: варианты (Маленький / Большой) -->
+        <sql>SET @p = (SELECT id FROM products WHERE name='Хумус классик'  AND seller_id=@spice)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Маленький',199.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Большой',  349.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Фалафель'       AND seller_id=@spice)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Маленький',249.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Большой',  429.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Шаурма'         AND seller_id=@spice)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Маленький',349.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Большой',  499.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Баба Гануш'     AND seller_id=@spice)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Маленький',179.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Большой',  299.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Пахлава'        AND seller_id=@spice)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Штука',  149.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'Набор',  549.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Чай Масала'     AND seller_id=@spice)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',179.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',229.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',279.00)</sql>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- ── Green Bowl: салаты и боулы (6 товаров) ─────────────────────── -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_salad, 'Боул Будды',       'Киноа, нут, авокадо, огурец, морковь и соус тахини — питательный и полезный боул.',               'buddha_bowl.jpg',   @green)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_salad, 'Цезарь',          'Классический салат с хрустящими листьями романо, пармезаном, крутонами и соусом цезарь.',           'caesar.jpg',        @green)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_salad, 'Греческий',       'Свежий салат с томатами, огурцами, маслинами, болгарским перцем и сыром фета.',                     'greek_salad.jpg',   @green)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_salad, 'Тунец Боул',      'Коричневый рис, тунец, эдамаме, авокадо, огурец и кунжутный соус.',                                 'tuna_bowl.jpg',     @green)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_salad, 'Смузи Боул',      'Замороженные ягоды, банан, гранола, свежие фрукты и семена чиа — идеальный завтрак.',               'smoothie_bowl.jpg', @green)</sql>
+        <sql>INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES (@cat_drinks,'Зелёный Детокс',  'Свежевыжатый сок из шпината, огурца, сельдерея, яблока и лимона. Заряд энергии с утра.',           'green_detox.jpg',   @green)</sql>
+
+        <!-- ── Green Bowl: варианты (Маленький / Средний / Большой) -->
+        <sql>SET @p = (SELECT id FROM products WHERE name='Боул Будды'     AND seller_id=@green)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',349.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',449.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',549.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Цезарь'        AND seller_id=@green)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',299.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',399.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',499.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Греческий'     AND seller_id=@green)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',279.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',369.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',459.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Тунец Боул'    AND seller_id=@green)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',399.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',499.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',599.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Смузи Боул'    AND seller_id=@green)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',329.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',429.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',529.00)</sql>
+
+        <sql>SET @p = (SELECT id FROM products WHERE name='Зелёный Детокс' AND seller_id=@green)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'S',199.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'M',249.00)</sql>
+        <sql>INSERT INTO product_variants (coffee_id, size, price) VALUES (@p,'L',299.00)</sql>
+
+    </changeSet>
+
+</databaseChangeLog>

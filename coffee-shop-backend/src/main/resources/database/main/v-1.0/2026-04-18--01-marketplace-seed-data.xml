@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <changeSet id="marketplace-seed-data-v1" author="Ibrogimov Zafar" failOnError="false">
+        <validCheckSum>ANY</validCheckSum>
+
+        <!-- Очищаем старые данные -->
+        <sql>SET FOREIGN_KEY_CHECKS=0</sql>
+        <delete tableName="cart_items"/>
+        <delete tableName="favorite_products"/>
+        <delete tableName="product_variants"/>
+        <delete tableName="products"/>
+        <sql>SET FOREIGN_KEY_CHECKS=1</sql>
+
+        <!-- Переименовываем старые категории под маркетплейс -->
+        <update tableName="product_categories">
+            <column name="type" value="Кофе"/>
+            <where>id = 1</where>
+        </update>
+        <update tableName="product_categories">
+            <column name="type" value="Напитки"/>
+            <where>id = 2</where>
+        </update>
+        <update tableName="product_categories">
+            <column name="type" value="Выпечка"/>
+            <where>id = 3</where>
+        </update>
+
+        <!-- Добавляем новые категории -->
+        <insert tableName="product_categories">
+            <column name="type" value="Сандвичи"/>
+        </insert>
+        <insert tableName="product_categories">
+            <column name="type" value="Десерты"/>
+        </insert>
+        <insert tableName="product_categories">
+            <column name="type" value="Завтраки"/>
+        </insert>
+
+        <!-- Добавляем пользователей-продавцов (пароль тот же что у admin — для демо) -->
+        <sql splitStatements="true">
+            INSERT INTO users (email, name, password_hash, role) VALUES ('urbanbrew@mail.ru', 'Артём Кофейников', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER');
+            INSERT INTO users (email, name, password_hash, role) VALUES ('boulangerie@mail.ru', 'Мария Булочкина', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER');
+            INSERT INTO users (email, name, password_hash, role) VALUES ('freshbites@mail.ru', 'Дмитрий Свежев', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')
+        </sql>
+
+        <!-- Добавляем магазины продавцов -->
+        <sql splitStatements="true">
+            INSERT INTO sellers (user_id, name, description, category, rating, is_active)
+            SELECT id, 'Urban Brew', 'Авторский кофе из зёрен со всего мира. Каждая чашка — история о вкусе и качестве.', 'Кофейня', 4.9, true FROM users WHERE email = 'urbanbrew@mail.ru';
+
+            INSERT INTO sellers (user_id, name, description, category, rating, is_active)
+            SELECT id, 'La Boulangerie', 'Свежая французская выпечка и изысканные десерты по рецептам парижских кондитеров.', 'Пекарня', 4.8, true FROM users WHERE email = 'boulangerie@mail.ru';
+
+            INSERT INTO sellers (user_id, name, description, category, rating, is_active)
+            SELECT id, 'Fresh Bites', 'Сытные сэндвичи и завтраки из свежих локальных продуктов. Быстро, вкусно, полезно.', 'Кухня', 4.7, true FROM users WHERE email = 'freshbites@mail.ru'
+        </sql>
+
+        <!-- ── Urban Brew: кофе и напитки ─────────────────────────────────── -->
+        <sql splitStatements="false">
+            INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES
+            (1, 'Раф Кофе',     'Нежный эспрессо со взбитыми сливками и ванильным сахаром — бархатный вкус в каждом глотке.',   'raf.jpg',           (SELECT id FROM sellers WHERE name='Urban Brew')),
+            (1, 'Эспрессо',     'Классический итальянский эспрессо из отборных зёрен с насыщенным ароматом и плотной крема.',    'espresso.jpg',      (SELECT id FROM sellers WHERE name='Urban Brew')),
+            (1, 'Американо',    'Эспрессо с горячей водой — мягкий ароматный напиток для бодрого старта дня.',                   'americano.jpg',     (SELECT id FROM sellers WHERE name='Urban Brew')),
+            (1, 'Матча Латте',  'Японский чай матча со взбитым молоком — нежный вкус с лёгкой травяной ноткой.',                 'matcha.jpg',        (SELECT id FROM sellers WHERE name='Urban Brew')),
+            (2, 'Айс Латте',    'Охлаждённый эспрессо с холодным молоком и льдом. Идеален для жаркого дня.',                    'iced_latte.jpg',    (SELECT id FROM sellers WHERE name='Urban Brew')),
+            (2, 'Нитро Колд Брю','Колд брю под давлением азота — кремовая текстура и мягкий вкус без горечи.',                  'nitro_cold_brew.jpg',(SELECT id FROM sellers WHERE name='Urban Brew'))
+        </sql>
+
+        <!-- ── La Boulangerie: выпечка и десерты ─────────────────────────── -->
+        <sql splitStatements="false">
+            INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES
+            (3, 'Круасан классик',    'Слоёный маслянистый круасан из французского теста с хрустящей золотистой корочкой.',       'croissant.jpg',       (SELECT id FROM sellers WHERE name='La Boulangerie')),
+            (3, 'Миндальный круасан', 'Круасан с нежной миндальной начинкой и посыпкой из лепестков миндаля.',                    'almond_croissant.jpg',(SELECT id FROM sellers WHERE name='La Boulangerie')),
+            (3, 'Синабон',           'Мягкая булочка с корицей, политая сливочной глазурью. Классика американских кофеен.',        'cinnamon_roll.jpg',   (SELECT id FROM sellers WHERE name='La Boulangerie')),
+            (3, 'Маффин с черникой', 'Пышный маффин с сочными ягодами черники и хрустящей сахарной корочкой.',                   'blueberry_muffin.jpg',(SELECT id FROM sellers WHERE name='La Boulangerie')),
+            (5, 'Эклер ванильный',   'Классический французский эклер с нежным ванильным кремом и шоколадной глазурью.',           'eclair.jpg',          (SELECT id FROM sellers WHERE name='La Boulangerie')),
+            (5, 'Тарт с лимоном',    'Хрустящая песочная корзиночка с кремом лимон-курд и нежной итальянской меренгой.',          'lemon_tart.jpg',      (SELECT id FROM sellers WHERE name='La Boulangerie'))
+        </sql>
+
+        <!-- ── Fresh Bites: сэндвичи и завтраки ──────────────────────────── -->
+        <sql splitStatements="false">
+            INSERT INTO products (type_id, name, description, image_name, seller_id) VALUES
+            (4, 'Клаб Сэндвич',      'Многослойный сэндвич с куриным филе, беконом, томатами, листьями салата и фирменным соусом.','club_sandwich.jpg',   (SELECT id FROM sellers WHERE name='Fresh Bites')),
+            (4, 'Сэндвич с лососем', 'Багет с нежным слабосолёным лососем, сливочным сыром, каперсами и свежим огурцом.',          'salmon_sandwich.jpg', (SELECT id FROM sellers WHERE name='Fresh Bites')),
+            (4, 'Авокадо Тост',      'Хрустящий тост с кремом из авокадо, яйцом пашот, чили и микрозеленью.',                      'avocado_toast.jpg',   (SELECT id FROM sellers WHERE name='Fresh Bites')),
+            (6, 'Эгг Бенедикт',      'Английский маффин с ветчиной, яйцом пашот и нежным соусом голландез.',                       'eggs_benedict.jpg',   (SELECT id FROM sellers WHERE name='Fresh Bites')),
+            (6, 'Панкейки',          'Воздушные американские панкейки с кленовым сиропом и свежими сезонными ягодами.',             'pancakes.jpg',        (SELECT id FROM sellers WHERE name='Fresh Bites'))
+        </sql>
+
+        <!-- ── Варианты: кофе и напитки (S / M / L) ─────────────────────── -->
+        <sql splitStatements="false">
+            INSERT INTO product_variants (coffee_id, size, price) VALUES
+            ((SELECT id FROM products WHERE name='Раф Кофе'),      'S', 249.00),
+            ((SELECT id FROM products WHERE name='Раф Кофе'),      'M', 299.00),
+            ((SELECT id FROM products WHERE name='Раф Кофе'),      'L', 349.00),
+            ((SELECT id FROM products WHERE name='Эспрессо'),      'S', 149.00),
+            ((SELECT id FROM products WHERE name='Эспрессо'),      'M', 189.00),
+            ((SELECT id FROM products WHERE name='Эспрессо'),      'L', 229.00),
+            ((SELECT id FROM products WHERE name='Американо'),     'S', 159.00),
+            ((SELECT id FROM products WHERE name='Американо'),     'M', 199.00),
+            ((SELECT id FROM products WHERE name='Американо'),     'L', 239.00),
+            ((SELECT id FROM products WHERE name='Матча Латте'),   'S', 269.00),
+            ((SELECT id FROM products WHERE name='Матча Латте'),   'M', 319.00),
+            ((SELECT id FROM products WHERE name='Матча Латте'),   'L', 369.00),
+            ((SELECT id FROM products WHERE name='Айс Латте'),     'S', 239.00),
+            ((SELECT id FROM products WHERE name='Айс Латте'),     'M', 289.00),
+            ((SELECT id FROM products WHERE name='Айс Латте'),     'L', 339.00),
+            ((SELECT id FROM products WHERE name='Нитро Колд Брю'),'S', 279.00),
+            ((SELECT id FROM products WHERE name='Нитро Колд Брю'),'M', 329.00),
+            ((SELECT id FROM products WHERE name='Нитро Колд Брю'),'L', 379.00)
+        </sql>
+
+        <!-- ── Варианты: выпечка и десерты (Штука / Двойная) ────────────── -->
+        <sql splitStatements="false">
+            INSERT INTO product_variants (coffee_id, size, price) VALUES
+            ((SELECT id FROM products WHERE name='Круасан классик'),    'Штука',  189.00),
+            ((SELECT id FROM products WHERE name='Круасан классик'),    'Двойная',329.00),
+            ((SELECT id FROM products WHERE name='Миндальный круасан'), 'Штука',  229.00),
+            ((SELECT id FROM products WHERE name='Миндальный круасан'), 'Двойная',399.00),
+            ((SELECT id FROM products WHERE name='Синабон'),            'Штука',  249.00),
+            ((SELECT id FROM products WHERE name='Синабон'),            'Двойная',439.00),
+            ((SELECT id FROM products WHERE name='Маффин с черникой'),  'Штука',  179.00),
+            ((SELECT id FROM products WHERE name='Маффин с черникой'),  'Двойная',299.00),
+            ((SELECT id FROM products WHERE name='Эклер ванильный'),    'Штука',  219.00),
+            ((SELECT id FROM products WHERE name='Эклер ванильный'),    'Двойная',389.00),
+            ((SELECT id FROM products WHERE name='Тарт с лимоном'),     'Штука',  259.00),
+            ((SELECT id FROM products WHERE name='Тарт с лимоном'),     'Двойная',459.00)
+        </sql>
+
+        <!-- ── Варианты: сэндвичи и завтраки (Порция / Двойная) ─────────── -->
+        <sql splitStatements="false">
+            INSERT INTO product_variants (coffee_id, size, price) VALUES
+            ((SELECT id FROM products WHERE name='Клаб Сэндвич'),      'Порция',  399.00),
+            ((SELECT id FROM products WHERE name='Клаб Сэндвич'),      'Двойная', 699.00),
+            ((SELECT id FROM products WHERE name='Сэндвич с лососем'), 'Порция',  449.00),
+            ((SELECT id FROM products WHERE name='Сэндвич с лососем'), 'Двойная', 799.00),
+            ((SELECT id FROM products WHERE name='Авокадо Тост'),      'Порция',  349.00),
+            ((SELECT id FROM products WHERE name='Авокадо Тост'),      'Двойная', 599.00),
+            ((SELECT id FROM products WHERE name='Эгг Бенедикт'),      'Порция',  479.00),
+            ((SELECT id FROM products WHERE name='Эгг Бенедикт'),      'Двойная', 859.00),
+            ((SELECT id FROM products WHERE name='Панкейки'),           'Порция',  329.00),
+            ((SELECT id FROM products WHERE name='Панкейки'),           'Двойная', 579.00)
+        </sql>
+
+    </changeSet>
+
+</databaseChangeLog>
