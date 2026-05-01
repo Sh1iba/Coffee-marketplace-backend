@@ -31,34 +31,19 @@
         </update>
 
         <!-- Добавляем новые категории -->
-        <insert tableName="product_categories">
-            <column name="type" value="Сандвичи"/>
-        </insert>
-        <insert tableName="product_categories">
-            <column name="type" value="Десерты"/>
-        </insert>
-        <insert tableName="product_categories">
-            <column name="type" value="Завтраки"/>
-        </insert>
+        <sql>INSERT INTO product_categories (type) SELECT 'Сандвичи' WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Сандвичи')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Десерты'  WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Десерты')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Завтраки' WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Завтраки')</sql>
 
         <!-- Добавляем пользователей-продавцов (пароль тот же что у admin — для демо) -->
-        <sql splitStatements="true">
-            INSERT INTO users (email, name, password_hash, role) VALUES ('urbanbrew@mail.ru', 'Артём Кофейников', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER');
-            INSERT INTO users (email, name, password_hash, role) VALUES ('boulangerie@mail.ru', 'Мария Булочкина', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER');
-            INSERT INTO users (email, name, password_hash, role) VALUES ('freshbites@mail.ru', 'Дмитрий Свежев', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')
-        </sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) SELECT 'urbanbrew@mail.ru', 'Артём Кофейников', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER' WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='urbanbrew@mail.ru')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) SELECT 'boulangerie@mail.ru', 'Мария Булочкина', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER' WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='boulangerie@mail.ru')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) SELECT 'freshbites@mail.ru', 'Дмитрий Свежев', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER' WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='freshbites@mail.ru')</sql>
 
         <!-- Добавляем магазины продавцов -->
-        <sql splitStatements="true">
-            INSERT INTO sellers (user_id, name, description, category, rating, is_active)
-            SELECT id, 'Urban Brew', 'Авторский кофе из зёрен со всего мира. Каждая чашка — история о вкусе и качестве.', 'Кофейня', 4.9, true FROM users WHERE email = 'urbanbrew@mail.ru';
-
-            INSERT INTO sellers (user_id, name, description, category, rating, is_active)
-            SELECT id, 'La Boulangerie', 'Свежая французская выпечка и изысканные десерты по рецептам парижских кондитеров.', 'Пекарня', 4.8, true FROM users WHERE email = 'boulangerie@mail.ru';
-
-            INSERT INTO sellers (user_id, name, description, category, rating, is_active)
-            SELECT id, 'Fresh Bites', 'Сытные сэндвичи и завтраки из свежих локальных продуктов. Быстро, вкусно, полезно.', 'Кухня', 4.7, true FROM users WHERE email = 'freshbites@mail.ru'
-        </sql>
+        <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'Urban Brew', 'Авторский кофе из зёрен со всего мира. Каждая чашка — история о вкусе и качестве.', 'Кофейня', 4.9, true FROM users WHERE email='urbanbrew@mail.ru' AND NOT EXISTS (SELECT 1 FROM sellers WHERE user_id=(SELECT id FROM users WHERE email='urbanbrew@mail.ru'))</sql>
+        <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'La Boulangerie', 'Свежая французская выпечка и изысканные десерты по рецептам парижских кондитеров.', 'Пекарня', 4.8, true FROM users WHERE email='boulangerie@mail.ru' AND NOT EXISTS (SELECT 1 FROM sellers WHERE user_id=(SELECT id FROM users WHERE email='boulangerie@mail.ru'))</sql>
+        <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'Fresh Bites', 'Сытные сэндвичи и завтраки из свежих локальных продуктов. Быстро, вкусно, полезно.', 'Кухня', 4.7, true FROM users WHERE email='freshbites@mail.ru' AND NOT EXISTS (SELECT 1 FROM sellers WHERE user_id=(SELECT id FROM users WHERE email='freshbites@mail.ru'))</sql>
 
         <!-- ── Urban Brew: кофе и напитки ─────────────────────────────────── -->
         <sql splitStatements="false">

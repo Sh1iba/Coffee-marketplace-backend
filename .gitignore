@@ -38,3 +38,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Остатки после реструктуризации ###
+coffee-shop-backend/
