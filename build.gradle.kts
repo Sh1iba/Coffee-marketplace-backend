@@ -7,7 +7,7 @@ plugins {
     id ("org.liquibase.gradle") version "2.1.1"
 }
 
-group = "ru.mireadev"
+group = "io.github.sh1iba"
 version = "0.0.1-SNAPSHOT"
 
 java {
