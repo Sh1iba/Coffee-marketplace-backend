@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import io.github.sh1iba.dto.ProductManageRequest
+import io.github.sh1iba.dto.OrderStatusRequest
 import io.github.sh1iba.dto.SellerOrderResponse
 import io.github.sh1iba.dto.SellerRequest
 import io.github.sh1iba.dto.SellerResponse
@@ -182,5 +183,17 @@ class SellerController(
     fun getMyOrders(authentication: Authentication): ResponseEntity<List<SellerOrderResponse>> {
         val userId = userService.getUserIdFromAuthentication(authentication)
         return orderService.getOrdersForSeller(userId)
+    }
+
+    @Operation(summary = "Обновить статус заказа [SELLER]")
+    @PutMapping("/me/orders/{orderId}/status")
+    @PreAuthorize("hasRole('SELLER')")
+    fun updateOrderStatus(
+        @PathVariable orderId: Long,
+        @RequestBody request: OrderStatusRequest,
+        authentication: Authentication
+    ): ResponseEntity<Any> {
+        val userId = userService.getUserIdFromAuthentication(authentication)
+        return orderService.updateSellerOrderStatus(userId, orderId, request.status)
     }
 }

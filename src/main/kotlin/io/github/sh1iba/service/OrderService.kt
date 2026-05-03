@@ -118,6 +118,28 @@ class OrderService(
         return ResponseEntity.ok(mapOf("message" to "Статус обновлён", "status" to status))
     }
 
+    @Transactional
+    fun updateSellerOrderStatus(userId: Long, orderId: Long, status: OrderStatus): ResponseEntity<Any> {
+        val seller = sellerRepository.findByUserId(userId)
+            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to "Магазин не найден"))
+
+        val order = orderRepository.findById(orderId).orElse(null)
+            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to "Заказ не найден"))
+
+        val hasItems = orderItemRepository.findAllByOrderId(orderId).any { it.sellerId == seller.id }
+        if (!hasItems)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mapOf("message" to "Этот заказ не содержит ваших товаров"))
+
+        val allowedByStatus = setOf(OrderStatus.CONFIRMED, OrderStatus.PROCESSING, OrderStatus.READY, OrderStatus.DELIVERED)
+        if (status !in allowedByStatus)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(mapOf("message" to "Нельзя установить статус $status"))
+
+        order.status = status
+        orderRepository.save(order)
+        return ResponseEntity.ok(mapOf("message" to "Статус обновлён", "status" to status))
+    }
+
     fun getOrdersForSeller(userId: Long): ResponseEntity<List<SellerOrderResponse>> {
         val seller = sellerRepository.findByUserId(userId)
             ?: return ResponseEntity.ok(emptyList())

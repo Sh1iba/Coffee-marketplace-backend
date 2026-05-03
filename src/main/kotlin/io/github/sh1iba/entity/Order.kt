@@ -5,7 +5,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 enum class OrderStatus {
-    PENDING, CONFIRMED, PROCESSING, DELIVERED, CANCELLED
+    PENDING, CONFIRMED, PROCESSING, READY, DELIVERED, CANCELLED
 }
 
 @Entity
