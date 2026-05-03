@@ -36,9 +36,9 @@
         <sql>INSERT INTO product_categories (type) SELECT 'Завтраки' WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Завтраки')</sql>
 
         <!-- Добавляем пользователей-продавцов (пароль тот же что у admin — для демо) -->
-        <sql>INSERT INTO users (email, name, password_hash, role) SELECT 'urbanbrew@mail.ru', 'Артём Кофейников', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER' WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='urbanbrew@mail.ru')</sql>
-        <sql>INSERT INTO users (email, name, password_hash, role) SELECT 'boulangerie@mail.ru', 'Мария Булочкина', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER' WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='boulangerie@mail.ru')</sql>
-        <sql>INSERT INTO users (email, name, password_hash, role) SELECT 'freshbites@mail.ru', 'Дмитрий Свежев', '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER' WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='freshbites@mail.ru')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) SELECT 'urbanbrew@mail.ru', 'Артём Кофейников', '$2a$10$DQSlDbBO0lWQTsy8Whk0n.SwJo5UMPPRmM/YuNY6wzvEs1ZQNY68C', 'SELLER' WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='urbanbrew@mail.ru')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) SELECT 'boulangerie@mail.ru', 'Мария Булочкина', '$2a$10$DQSlDbBO0lWQTsy8Whk0n.SwJo5UMPPRmM/YuNY6wzvEs1ZQNY68C', 'SELLER' WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='boulangerie@mail.ru')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) SELECT 'freshbites@mail.ru', 'Дмитрий Свежев', '$2a$10$DQSlDbBO0lWQTsy8Whk0n.SwJo5UMPPRmM/YuNY6wzvEs1ZQNY68C', 'SELLER' WHERE NOT EXISTS (SELECT 1 FROM users WHERE email='freshbites@mail.ru')</sql>
 
         <!-- Добавляем магазины продавцов -->
         <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'Urban Brew', 'Авторский кофе из зёрен со всего мира. Каждая чашка — история о вкусе и качестве.', 'Кофейня', 4.9, true FROM users WHERE email='urbanbrew@mail.ru' AND NOT EXISTS (SELECT 1 FROM sellers WHERE user_id=(SELECT id FROM users WHERE email='urbanbrew@mail.ru'))</sql>

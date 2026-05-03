@@ -7,7 +7,7 @@
         <insert tableName="users">
             <column name="email" value="admin@mail.ru"/>
             <column name="name" value="Admin Adminovich"/>
-            <column name="password_hash" value="$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2"/>
+            <column name="password_hash" value="$2a$10$DQSlDbBO0lWQTsy8Whk0n.SwJo5UMPPRmM/YuNY6wzvEs1ZQNY68C"/>
         </insert>
     </changeSet>
 </databaseChangeLog>

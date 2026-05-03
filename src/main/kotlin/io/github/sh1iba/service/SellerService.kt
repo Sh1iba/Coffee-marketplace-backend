@@ -14,7 +14,8 @@ class SellerService(
     private val userRepository: UserRepository,
     private val productRepository: ProductRepository,
     private val productCategoryRepository: ProductCategoryRepository,
-    private val productVariantRepository: ProductVariantRepository
+    private val productVariantRepository: ProductVariantRepository,
+    private val imageStorageService: ImageStorageService
 ) {
 
     // ── Результаты операций ────────────────────────────────────────────────
@@ -142,7 +143,12 @@ class SellerService(
             return DeleteResult.Forbidden("Этот товар принадлежит другому магазину")
         }
 
+        val imageName = product.imageName
         productRepository.delete(product)
+        if (imageName.isNotBlank()) {
+            val remaining = productRepository.countByImageName(imageName)
+            imageStorageService.deleteIfUnused(imageName, remaining)
+        }
         return DeleteResult.Success
     }
 

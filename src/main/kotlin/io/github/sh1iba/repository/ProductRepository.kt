@@ -23,4 +23,6 @@ interface ProductRepository : JpaRepository<Product, Int> {
     ): Page<Product>
 
     fun findAllBySellerId(sellerId: Long): List<Product>
+
+    fun countByImageName(imageName: String): Long
 }

@@ -31,11 +31,11 @@
         <sql>INSERT INTO product_categories (type) SELECT 'Салаты'   WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Салаты')</sql>
 
         <!-- ── Продавцы: создаём пользователей ──────────────────────────────── -->
-        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('urbanbrew@mail.ru',  'Артём Кофейников',  '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
-        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('boulangerie@mail.ru','Мария Булочкина',   '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
-        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('freshbites@mail.ru', 'Дмитрий Свежев',   '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
-        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('spiceroute@mail.ru', 'Алия Пряникова',   '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
-        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('greenbowl@mail.ru',  'Никита Зеленцов',  '$2a$10$naKtLuLcLvrDOhKvlMnhs.vGpVe9pVhPz8K2HFonJ/ZaIffj1wIP2', 'SELLER')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('urbanbrew@mail.ru',  'Артём Кофейников',  '$2a$10$DQSlDbBO0lWQTsy8Whk0n.SwJo5UMPPRmM/YuNY6wzvEs1ZQNY68C', 'SELLER')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('boulangerie@mail.ru','Мария Булочкина',   '$2a$10$DQSlDbBO0lWQTsy8Whk0n.SwJo5UMPPRmM/YuNY6wzvEs1ZQNY68C', 'SELLER')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('freshbites@mail.ru', 'Дмитрий Свежев',   '$2a$10$DQSlDbBO0lWQTsy8Whk0n.SwJo5UMPPRmM/YuNY6wzvEs1ZQNY68C', 'SELLER')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('spiceroute@mail.ru', 'Алия Пряникова',   '$2a$10$DQSlDbBO0lWQTsy8Whk0n.SwJo5UMPPRmM/YuNY6wzvEs1ZQNY68C', 'SELLER')</sql>
+        <sql>INSERT INTO users (email, name, password_hash, role) VALUES ('greenbowl@mail.ru',  'Никита Зеленцов',  '$2a$10$DQSlDbBO0lWQTsy8Whk0n.SwJo5UMPPRmM/YuNY6wzvEs1ZQNY68C', 'SELLER')</sql>
 
         <!-- ── Продавцы: создаём магазины ──────────────────────────────────── -->
         <sql>INSERT INTO sellers (user_id, name, description, category, rating, is_active) SELECT id, 'Urban Brew', 'Авторский кофе из зёрен со всего мира. Каждая чашка — история о вкусе и качестве.', 'Кофейня', 4.9, true FROM users WHERE email='urbanbrew@mail.ru'</sql>

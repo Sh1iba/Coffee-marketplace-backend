@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.UUID
+import java.security.MessageDigest
 
 @Service
 class ImageStorageService(
@@ -34,10 +34,23 @@ class ImageStorageService(
             ?.lowercase()
             ?.takeIf { it.isNotBlank() } ?: "jpg"
 
-        val fileName = "${UUID.randomUUID()}.$extension"
+        val bytes = file.bytes
+        val hash = MessageDigest.getInstance("MD5")
+            .digest(bytes)
+            .joinToString("") { "%02x".format(it) }
+
+        val fileName = "$hash.$extension"
         val target = Paths.get(imagesDirectory, fileName)
-        Files.copy(file.inputStream, target)
+        if (!Files.exists(target)) {
+            Files.write(target, bytes)
+        }
         return fileName
+    }
+
+    fun deleteIfUnused(fileName: String, usageCount: Long) {
+        if (usageCount == 0L) {
+            Files.deleteIfExists(Paths.get(imagesDirectory, fileName))
+        }
     }
 
     fun getImageResource(fileName: String): Resource {
