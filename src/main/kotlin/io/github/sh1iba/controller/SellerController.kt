@@ -32,6 +32,23 @@ class SellerController(
 
     // ── Магазин ────────────────────────────────────────────────────────────
 
+    @Operation(summary = "Стать продавцом — создаёт магазин и меняет роль BUYER → SELLER")
+    @PostMapping("/become-seller")
+    fun becomeSeller(
+        @Valid @RequestBody request: SellerRequest,
+        authentication: Authentication
+    ): ResponseEntity<Any> {
+        val userId = userService.getUserIdFromAuthentication(authentication)
+        return when (val r = sellerService.becomeSeller(userId, request)) {
+            is SellerService.BecomeSellerResult.Success ->
+                ResponseEntity.status(HttpStatus.CREATED).body(r.response)
+            is SellerService.BecomeSellerResult.AlreadyASeller ->
+                ResponseEntity.status(HttpStatus.CONFLICT).body(mapOf("message" to r.message))
+            is SellerService.BecomeSellerResult.UserNotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to r.message))
+        }
+    }
+
     @Operation(summary = "Создать магазин [SELLER]")
     @PostMapping
     @PreAuthorize("hasRole('SELLER')")

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import io.github.sh1iba.dto.*
 import io.github.sh1iba.entity.Product
 import io.github.sh1iba.entity.ProductVariant
+import io.github.sh1iba.entity.Role
 import io.github.sh1iba.entity.Seller
 import io.github.sh1iba.repository.*
 
@@ -41,6 +42,12 @@ class SellerService(
         data class Forbidden(val message: String) : DeleteResult()
     }
 
+    sealed class BecomeSellerResult {
+        data class Success(val response: SellerResponse) : BecomeSellerResult()
+        data class AlreadyASeller(val message: String) : BecomeSellerResult()
+        data class UserNotFound(val message: String) : BecomeSellerResult()
+    }
+
     // ── Управление магазином ───────────────────────────────────────────────
 
     fun createSeller(userId: Long, request: SellerRequest): SellerResult {
@@ -55,6 +62,26 @@ class SellerService(
                 category = request.category, logoImage = request.logoImage)
         )
         return SellerResult.Success(saved.toResponse())
+    }
+
+    @Transactional
+    fun becomeSeller(userId: Long, request: SellerRequest): BecomeSellerResult {
+        val user = userRepository.findById(userId).orElse(null)
+            ?: return BecomeSellerResult.UserNotFound("Пользователь не найден")
+
+        if (sellerRepository.existsByUserId(userId)) {
+            return BecomeSellerResult.AlreadyASeller("Вы уже являетесь продавцом")
+        }
+
+        val seller = sellerRepository.save(
+            Seller(user = user, name = request.name, description = request.description,
+                category = request.category, logoImage = request.logoImage)
+        )
+
+        user.role = Role.SELLER
+        userRepository.save(user)
+
+        return BecomeSellerResult.Success(seller.toResponse())
     }
 
     fun getMyShop(userId: Long): SellerResponse? =
