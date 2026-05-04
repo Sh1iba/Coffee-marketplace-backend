@@ -8,5 +8,8 @@ data class ProductVariantResponse(
     val size: String,
 
     @field:Schema(description = "Цена", example = "345.9")
-    val price: Float
+    val price: Float,
+
+    @field:Schema(description = "Объём или вес, например '250 мл' или '300 г'", example = "250 мл")
+    val volume: String? = null
 )

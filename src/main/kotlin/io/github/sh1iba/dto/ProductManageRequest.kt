@@ -41,5 +41,8 @@ data class VariantRequest(
 
     @field:Schema(description = "Цена", example = "345.90", required = true)
     @field:Positive
-    val price: BigDecimal
+    val price: BigDecimal,
+
+    @field:Schema(description = "Объём или вес, например '250 мл' или '300 г'", example = "250 мл")
+    val volume: String? = null
 )

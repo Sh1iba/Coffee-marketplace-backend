@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <changeSet id="2026-05-04--01" author="zafar">
+        <addColumn tableName="product_variants">
+            <column name="volume" type="VARCHAR(30)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2026-05-04--02" author="zafar">
+        <!-- Urban Brew: горячий кофе S/M/L -->
+        <sql>
+            UPDATE product_variants pv
+            JOIN products p ON pv.coffee_id = p.id
+            JOIN sellers s ON p.seller_id = s.id
+            JOIN product_categories pc ON p.type_id = pc.id
+            SET pv.volume = CASE pv.size WHEN 'S' THEN '150 мл' WHEN 'M' THEN '250 мл' WHEN 'L' THEN '350 мл' END
+            WHERE s.name = 'Urban Brew' AND pc.type = 'Кофе'
+        </sql>
+
+        <!-- Urban Brew: холодные напитки S/M/L -->
+        <sql>
+            UPDATE product_variants pv
+            JOIN products p ON pv.coffee_id = p.id
+            JOIN sellers s ON p.seller_id = s.id
+            JOIN product_categories pc ON p.type_id = pc.id
+            SET pv.volume = CASE pv.size WHEN 'S' THEN '250 мл' WHEN 'M' THEN '350 мл' WHEN 'L' THEN '450 мл' END
+            WHERE s.name = 'Urban Brew' AND pc.type = 'Напитки'
+        </sql>
+
+        <!-- La Boulangerie: выпечка и десерты (Штука / Двойная) -->
+        <sql>
+            UPDATE product_variants pv
+            JOIN products p ON pv.coffee_id = p.id
+            JOIN sellers s ON p.seller_id = s.id
+            SET pv.volume = CASE pv.size WHEN 'Штука' THEN '1 шт' WHEN 'Двойная' THEN '2 шт' END
+            WHERE s.name = 'La Boulangerie'
+        </sql>
+
+        <!-- Fresh Bites: сэндвичи (Порция / Двойная) -->
+        <sql>
+            UPDATE product_variants pv
+            JOIN products p ON pv.coffee_id = p.id
+            JOIN sellers s ON p.seller_id = s.id
+            JOIN product_categories pc ON p.type_id = pc.id
+            SET pv.volume = CASE pv.size WHEN 'Порция' THEN '350 г' WHEN 'Двойная' THEN '700 г' END
+            WHERE s.name = 'Fresh Bites' AND pc.type = 'Сандвичи'
+        </sql>
+
+        <!-- Fresh Bites: завтраки (Порция / Двойная) -->
+        <sql>
+            UPDATE product_variants pv
+            JOIN products p ON pv.coffee_id = p.id
+            JOIN sellers s ON p.seller_id = s.id
+            JOIN product_categories pc ON p.type_id = pc.id
+            SET pv.volume = CASE pv.size WHEN 'Порция' THEN '300 г' WHEN 'Двойная' THEN '600 г' END
+            WHERE s.name = 'Fresh Bites' AND pc.type = 'Завтраки'
+        </sql>
+
+        <!-- Spice Route: все варианты (Порция / Маленький / Большой) -->
+        <sql>
+            UPDATE product_variants pv
+            JOIN products p ON pv.coffee_id = p.id
+            JOIN sellers s ON p.seller_id = s.id
+            SET pv.volume = CASE pv.size
+                WHEN 'Порция'    THEN '300 г'
+                WHEN 'Маленький' THEN '200 г'
+                WHEN 'Большой'   THEN '350 г'
+                WHEN 'S'         THEN '200 мл'
+                WHEN 'M'         THEN '300 мл'
+                WHEN 'L'         THEN '400 мл'
+            END
+            WHERE s.name = 'Spice Route'
+        </sql>
+
+        <!-- Green Bowl: салаты (Маленький / Большой / Порция) -->
+        <sql>
+            UPDATE product_variants pv
+            JOIN products p ON pv.coffee_id = p.id
+            JOIN sellers s ON p.seller_id = s.id
+            JOIN product_categories pc ON p.type_id = pc.id
+            SET pv.volume = CASE pv.size
+                WHEN 'Маленький' THEN '200 г'
+                WHEN 'Большой'   THEN '350 г'
+                WHEN 'Порция'    THEN '300 г'
+            END
+            WHERE s.name = 'Green Bowl' AND pc.type = 'Салаты'
+        </sql>
+
+        <!-- Green Bowl: напитки (S / L) -->
+        <sql>
+            UPDATE product_variants pv
+            JOIN products p ON pv.coffee_id = p.id
+            JOIN sellers s ON p.seller_id = s.id
+            JOIN product_categories pc ON p.type_id = pc.id
+            SET pv.volume = CASE pv.size WHEN 'S' THEN '250 мл' WHEN 'L' THEN '400 мл' END
+            WHERE s.name = 'Green Bowl' AND pc.type = 'Напитки'
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

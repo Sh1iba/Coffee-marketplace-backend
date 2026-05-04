@@ -123,7 +123,7 @@ class SellerService(
         )
 
         val variants = productVariantRepository.saveAll(
-            request.variants.map { ProductVariant(product = product, size = it.size, price = it.price) }
+            request.variants.map { ProductVariant(product = product, size = it.size, price = it.price, volume = it.volume) }
         )
 
         return ProductResult.Success(product.copy(variants = variants.toMutableList()).toProductResponse())
@@ -152,7 +152,7 @@ class SellerService(
 
         productVariantRepository.deleteAllByProductId(productId)
         val variants = productVariantRepository.saveAll(
-            request.variants.map { ProductVariant(product = product, size = it.size, price = it.price) }
+            request.variants.map { ProductVariant(product = product, size = it.size, price = it.price, volume = it.volume) }
         )
 
         return ProductResult.Success(product.copy(variants = variants.toMutableList()).toProductResponse())
@@ -191,7 +191,7 @@ class SellerService(
         id = id,
         category = ProductCategoryResponse(id = category.id, type = category.type),
         name = name, description = description, imageName = imageName,
-        variants = variants.map { ProductVariantResponse(size = it.size, price = it.price.toFloat()) },
+        variants = variants.map { ProductVariantResponse(size = it.size, price = it.price.toFloat(), volume = it.volume) },
         sellerId = seller?.id, sellerName = seller?.name
     )
 }

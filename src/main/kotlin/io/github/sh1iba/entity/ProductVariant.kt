@@ -18,5 +18,8 @@ data class ProductVariant(
     val size: String,
 
     @Column(name = "price", nullable = false)
-    val price: BigDecimal
+    val price: BigDecimal,
+
+    @Column(name = "volume", nullable = true)
+    val volume: String? = null
 )

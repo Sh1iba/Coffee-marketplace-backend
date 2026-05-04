@@ -53,7 +53,7 @@ class ProductService(
         name = name,
         description = description,
         imageName = imageName,
-        variants = variants.map { ProductVariantResponse(size = it.size, price = it.price.toFloat()) },
+        variants = variants.map { ProductVariantResponse(size = it.size, price = it.price.toFloat(), volume = it.volume) },
         sellerId = seller?.id,
         sellerName = seller?.name
     )
