@@ -51,6 +51,32 @@ class ProductController(
     ): ResponseEntity<PagedResponse<ProductResponse>> =
         productService.getAllProducts(categoryId, sellerId, name, page, size)
 
+    @Operation(summary = "Популярные товары за 30 дней (просмотры + заказы)")
+    @GetMapping("/popular")
+    fun getPopular(@RequestParam(defaultValue = "8") limit: Int): ResponseEntity<List<ProductResponse>> =
+        productService.getPopular(limit)
+
+    @Operation(summary = "Рекомендации для пользователя (по просмотрам и заказам)")
+    @GetMapping("/recommended")
+    fun getRecommended(
+        authentication: Authentication,
+        @RequestParam(defaultValue = "8") limit: Int
+    ): ResponseEntity<List<ProductResponse>> {
+        val userId = userService.getUserIdFromAuthentication(authentication)
+        return productService.getRecommended(userId, limit)
+    }
+
+    @Operation(summary = "Логировать просмотр карточки товара")
+    @PostMapping("/{productId}/view")
+    fun logProductView(
+        authentication: Authentication,
+        @PathVariable productId: Int
+    ): ResponseEntity<Any> {
+        val userId = userService.getUserIdFromAuthentication(authentication)
+        productService.logInteraction(userId, productId, io.github.sh1iba.entity.InteractionType.VIEW)
+        return ResponseEntity.ok(mapOf("message" to "ok"))
+    }
+
     @Operation(summary = "Изображение товара")
     @GetMapping("/image/{imageName}")
     fun getImage(@PathVariable imageName: String): ResponseEntity<Resource> {

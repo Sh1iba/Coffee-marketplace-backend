@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import io.github.sh1iba.dto.FavoriteProductRequest
 import io.github.sh1iba.dto.FavoriteProductResponse
 import io.github.sh1iba.entity.FavoriteProduct
+import io.github.sh1iba.entity.InteractionType
 import io.github.sh1iba.repository.FavoriteProductRepository
 import io.github.sh1iba.repository.ProductRepository
 import io.github.sh1iba.repository.UserRepository
@@ -15,7 +16,8 @@ import io.github.sh1iba.repository.UserRepository
 class FavoriteProductService(
     private val favoriteProductRepository: FavoriteProductRepository,
     private val productRepository: ProductRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val productService: ProductService
 ) {
 
     fun getFavorites(userId: Long): ResponseEntity<List<FavoriteProductResponse>> {
@@ -47,6 +49,7 @@ class FavoriteProductService(
         favoriteProductRepository.save(
             FavoriteProduct(userId = userId, productId = request.productId, selectedSize = request.selectedSize)
         )
+        productService.logInteraction(userId, request.productId, InteractionType.FAVORITE)
         return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to "Product added to favorites"))
     }
 

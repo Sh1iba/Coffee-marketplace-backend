@@ -65,7 +65,7 @@ class OrderService(
             orderItems.add(
                 OrderItem(order = order, productName = product.name, selectedSize = cartItem.selectedSize,
                     unitPrice = variant.price, quantity = cartItem.quantity, totalPrice = itemTotal,
-                    sellerId = product.seller?.id)
+                    sellerId = product.seller?.id, productId = product.id)
             )
 
             cartItemRepository.deleteByUserIdAndProductIdAndSelectedSize(userId, cartItem.productId, cartItem.selectedSize)

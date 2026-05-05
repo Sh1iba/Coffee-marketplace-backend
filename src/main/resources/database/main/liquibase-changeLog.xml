@@ -25,5 +25,8 @@
     <include file="v-1.0/2026-04-18--01-marketplace-seed-data.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-04-18--02-marketplace-seed-fix.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-05-04--01-add-volume-to-product-variants.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-05-05--01-recommendations.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-05-05--02-fix-selected-size-column.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-05-05--03-user-product-interactions.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -9,6 +9,7 @@ import io.github.sh1iba.dto.CartItemResponse
 import io.github.sh1iba.dto.CartSummaryResponse
 import io.github.sh1iba.dto.UpdateCartQuantityRequest
 import io.github.sh1iba.entity.CartItem
+import io.github.sh1iba.entity.InteractionType
 import io.github.sh1iba.repository.CartItemRepository
 import io.github.sh1iba.repository.ProductRepository
 import io.github.sh1iba.repository.ProductVariantRepository
@@ -19,7 +20,8 @@ class CartService(
     private val cartItemRepository: CartItemRepository,
     private val productRepository: ProductRepository,
     private val userRepository: UserRepository,
-    private val productVariantRepository: ProductVariantRepository
+    private val productVariantRepository: ProductVariantRepository,
+    private val productService: ProductService
 ) {
 
     fun getCart(userId: Long): ResponseEntity<CartSummaryResponse> {
@@ -79,6 +81,7 @@ class CartService(
                     quantity = request.quantity
                 )
             )
+            productService.logInteraction(userId, request.productId, InteractionType.CART)
             ResponseEntity.status(HttpStatus.CREATED).body(mapOf("message" to "Product added to cart"))
         }
     }

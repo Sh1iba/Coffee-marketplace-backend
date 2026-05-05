@@ -62,5 +62,8 @@ data class OrderItem(
     val totalPrice: BigDecimal,
 
     @Column(name = "seller_id", nullable = true)
-    val sellerId: Long? = null
+    val sellerId: Long? = null,
+
+    @Column(name = "product_id", nullable = true)
+    val productId: Int? = null
 )

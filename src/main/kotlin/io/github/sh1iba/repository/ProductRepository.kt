@@ -25,4 +25,15 @@ interface ProductRepository : JpaRepository<Product, Int> {
     fun findAllBySellerId(sellerId: Long): List<Product>
 
     fun countByImageName(imageName: String): Long
+
+    @Query("""
+        SELECT p FROM Product p
+        WHERE p.category.id IN :categoryIds
+        AND p.id NOT IN :excludeIds
+    """)
+    fun findByCategoryIdInAndIdNotIn(
+        @Param("categoryIds") categoryIds: List<Int>,
+        @Param("excludeIds") excludeIds: List<Int>,
+        pageable: Pageable
+    ): Page<Product>
 }
