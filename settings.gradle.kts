@@ -1,1 +1,1 @@
-rootProject.name = "CoffeeShop"
+rootProject.name = "Coffee-marketplace-backend"
