@@ -40,6 +40,7 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-jackson:0.12.5")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    implementation("com.cloudinary:cloudinary-http45:1.38.0")
 }
 
 kotlin {

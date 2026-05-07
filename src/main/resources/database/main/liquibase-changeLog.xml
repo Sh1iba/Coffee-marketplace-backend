@@ -6,13 +6,11 @@
         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
 
     <include file="v-1.0/2025-05-29--01-initial-schema-users.xml" relativeToChangelogFile="true"/>
-    <include file="v-1.0/2025-05-29--02-data-users.xml" relativeToChangelogFile="true"/>
+    <!-- admin user handled by SeedDataLoader on startup -->
     <include file="v-1.0/2025-06-02--01-initial-schema-coffee-type.xml" relativeToChangelogFile="true"/>
-    <include file="v-1.0/2025-06-02--02-data-coffee-type.xml" relativeToChangelogFile="true"/>
+    <!-- old coffee data handled by SeedDataLoader -->
     <include file="v-1.0/2025-06-02--03-initial-schema-coffee.xml" relativeToChangelogFile="true"/>
-    <include file="v-1.0/2025-06-02--04-data-coffee.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2025-06-02--05-initial-schema-coffee-size.xml" relativeToChangelogFile="true"/>
-    <include file="v-1.0/2025-06-02--06-data-coffee-size.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2025-06-02--07-initial-schema-favorite-coffee.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2025-11-18--01-initial-schema-coffee-cart.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2025-01-15--01-initial-schema-orders.xml" relativeToChangelogFile="true"/>
@@ -22,11 +20,13 @@
     <include file="v-1.0/2026-04-17--01-rename-tables-for-marketplace.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-04-17--02-product-seller-order-status.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-04-17--03-order-items-seller-id.xml" relativeToChangelogFile="true"/>
-    <include file="v-1.0/2026-04-18--01-marketplace-seed-data.xml" relativeToChangelogFile="true"/>
-    <include file="v-1.0/2026-04-18--02-marketplace-seed-fix.xml" relativeToChangelogFile="true"/>
+    <!-- seed data handled by SeedDataLoader on startup -->
     <include file="v-1.0/2026-05-04--01-add-volume-to-product-variants.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-05-05--01-recommendations.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-05-05--02-fix-selected-size-column.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-05-05--03-user-product-interactions.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-05-07--01-rename-image-columns.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-05-07--02-drop-product-name-unique.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-05-07--03-fix-size-column.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

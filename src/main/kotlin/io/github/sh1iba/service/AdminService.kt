@@ -53,7 +53,7 @@ class AdminService(
 
     private fun Seller.toResponse() = SellerResponse(
         id = id, name = name, description = description, category = category,
-        logoImage = logoImage, rating = rating, isActive = isActive,
+        logoUrl = logoUrl, rating = rating, isActive = isActive,
         ownerId = user.id, ownerName = user.name
     )
 }

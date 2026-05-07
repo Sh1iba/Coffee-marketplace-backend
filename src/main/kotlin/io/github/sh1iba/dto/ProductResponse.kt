@@ -16,8 +16,8 @@ data class ProductResponse(
     @field:Schema(description = "Описание товара", example = "Кофейный напиток со сливками")
     val description: String,
 
-    @field:Schema(description = "Имя файла изображения", example = "raf.jpg")
-    val imageName: String,
+    @field:Schema(description = "URL изображения товара")
+    val imageUrl: String,
 
     @field:Schema(description = "Варианты товара (размер и цена)")
     val variants: List<ProductVariantResponse>,

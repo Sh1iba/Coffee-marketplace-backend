@@ -3,8 +3,6 @@ package io.github.sh1iba.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.core.io.Resource
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -16,7 +14,6 @@ import io.github.sh1iba.service.*
 @Tag(name = "Товары", description = "Каталог, избранное, корзина, заказы")
 class ProductController(
     private val productService: ProductService,
-    private val imageStorageService: ImageStorageService,
     private val favoriteProductService: FavoriteProductService,
     private val cartService: CartService,
     private val userService: UserService,
@@ -75,19 +72,6 @@ class ProductController(
         val userId = userService.getUserIdFromAuthentication(authentication)
         productService.logInteraction(userId, productId, io.github.sh1iba.entity.InteractionType.VIEW)
         return ResponseEntity.ok(mapOf("message" to "ok"))
-    }
-
-    @Operation(summary = "Изображение товара")
-    @GetMapping("/image/{imageName}")
-    fun getImage(@PathVariable imageName: String): ResponseEntity<Resource> {
-        val resource = imageStorageService.getImageResource(imageName)
-        val contentType = when (imageName.substringAfterLast('.').lowercase()) {
-            "jpg", "jpeg" -> MediaType.IMAGE_JPEG
-            "png" -> MediaType.IMAGE_PNG
-            "gif" -> MediaType.IMAGE_GIF
-            else -> MediaType.APPLICATION_OCTET_STREAM
-        }
-        return ResponseEntity.ok().contentType(contentType).body(resource)
     }
 
     // ── Избранное ──────────────────────────────────────────────────────────

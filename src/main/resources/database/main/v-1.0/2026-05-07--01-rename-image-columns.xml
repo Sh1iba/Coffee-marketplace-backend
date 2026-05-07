@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <changeSet id="rename-image-columns-to-url" author="Ibrogimov Zafar">
+        <sql>ALTER TABLE products CHANGE COLUMN image_name image_url VARCHAR(500) NOT NULL DEFAULT ''</sql>
+        <sql>ALTER TABLE sellers CHANGE COLUMN logo_image logo_url VARCHAR(500)</sql>
+    </changeSet>
+
+</databaseChangeLog>

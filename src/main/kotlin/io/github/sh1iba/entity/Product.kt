@@ -31,10 +31,10 @@ data class Product @JvmOverloads constructor(
     @Column(name = "description", nullable = false, length = 500)
     var description: String = "",
 
-    @Size(max = 50)
+    @Size(max = 500)
     @NotNull
-    @Column(name = "image_name", nullable = false, length = 50)
-    var imageName: String = "",
+    @Column(name = "image_url", nullable = false, length = 500)
+    var imageUrl: String = "",
 
     @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var variants: MutableList<ProductVariant> = mutableListOf()

@@ -17,8 +17,8 @@ data class SellerResponse(
     @field:Schema(description = "Категория магазина", example = "Кофейня")
     val category: String,
 
-    @field:Schema(description = "Имя файла логотипа", example = "logo_123.png")
-    val logoImage: String?,
+    @field:Schema(description = "URL логотипа магазина")
+    val logoUrl: String?,
 
     @field:Schema(description = "Рейтинг магазина", example = "4.8")
     val rating: Double,

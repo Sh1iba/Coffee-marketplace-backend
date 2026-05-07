@@ -114,8 +114,8 @@ class SellerController(
         @RequestPart("file") file: MultipartFile,
         authentication: Authentication
     ): ResponseEntity<Any> {
-        val fileName = imageStorageService.saveImage(file)
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("imageName" to fileName))
+        val url = imageStorageService.saveImage(file)
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapOf("imageUrl" to url))
     }
 
     // ── Товары ─────────────────────────────────────────────────────────────

@@ -22,8 +22,8 @@ data class CartItemResponse(
     @field:Schema(description = "Общая стоимость", example = "691.8")
     val totalPrice: Float,
 
-    @field:Schema(description = "Имя файла изображения", example = "raf.jpg")
-    val imageName: String
+    @field:Schema(description = "URL изображения товара")
+    val imageUrl: String
 )
 
 @Schema(description = "Содержимое корзины")

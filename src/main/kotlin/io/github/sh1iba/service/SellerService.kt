@@ -59,7 +59,7 @@ class SellerService(
 
         val saved = sellerRepository.save(
             Seller(user = user, name = request.name, description = request.description,
-                category = request.category, logoImage = request.logoImage)
+                category = request.category, logoUrl = request.logoUrl)
         )
         return SellerResult.Success(saved.toResponse())
     }
@@ -75,7 +75,7 @@ class SellerService(
 
         val seller = sellerRepository.save(
             Seller(user = user, name = request.name, description = request.description,
-                category = request.category, logoImage = request.logoImage)
+                category = request.category, logoUrl = request.logoUrl)
         )
 
         user.role = Role.SELLER
@@ -92,7 +92,7 @@ class SellerService(
         seller.name = request.name
         seller.description = request.description
         seller.category = request.category
-        seller.logoImage = request.logoImage
+        seller.logoUrl = request.logoUrl
         return sellerRepository.save(seller).toResponse()
     }
 
@@ -119,7 +119,7 @@ class SellerService(
 
         val product = productRepository.save(
             Product(category = category, seller = seller, name = request.name,
-                description = request.description, imageName = request.imageName)
+                description = request.description, imageUrl = request.imageUrl)
         )
 
         val variants = productVariantRepository.saveAll(
@@ -146,7 +146,7 @@ class SellerService(
 
         product.name = request.name
         product.description = request.description
-        product.imageName = request.imageName
+        product.imageUrl = request.imageUrl
         product.category = category
         productRepository.save(product)
 
@@ -170,11 +170,11 @@ class SellerService(
             return DeleteResult.Forbidden("Этот товар принадлежит другому магазину")
         }
 
-        val imageName = product.imageName
+        val imageUrl = product.imageUrl
         productRepository.delete(product)
-        if (imageName.isNotBlank()) {
-            val remaining = productRepository.countByImageName(imageName)
-            imageStorageService.deleteIfUnused(imageName, remaining)
+        if (imageUrl.isNotBlank()) {
+            val remaining = productRepository.countByImageUrl(imageUrl)
+            imageStorageService.deleteByUrl(imageUrl, remaining)
         }
         return DeleteResult.Success
     }
@@ -183,14 +183,14 @@ class SellerService(
 
     private fun Seller.toResponse() = SellerResponse(
         id = id, name = name, description = description, category = category,
-        logoImage = logoImage, rating = rating, isActive = isActive,
+        logoUrl = logoUrl, rating = rating, isActive = isActive,
         ownerId = user.id, ownerName = user.name
     )
 
-    private fun Product.toProductResponse() = ProductResponse(
+    fun Product.toProductResponse() = ProductResponse(
         id = id,
         category = ProductCategoryResponse(id = category.id, type = category.type),
-        name = name, description = description, imageName = imageName,
+        name = name, description = description, imageUrl = imageUrl,
         variants = variants.map { ProductVariantResponse(size = it.size, price = it.price.toFloat(), volume = it.volume) },
         sellerId = seller?.id, sellerName = seller?.name
     )

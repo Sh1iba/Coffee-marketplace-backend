@@ -28,9 +28,9 @@ data class Seller @JvmOverloads constructor(
     @Column(name = "description", nullable = false, length = 500)
     var description: String = "",
 
-    @Size(max = 50)
-    @Column(name = "logo_image", length = 50)
-    var logoImage: String? = null,
+    @Size(max = 500)
+    @Column(name = "logo_url", length = 500)
+    var logoUrl: String? = null,
 
     @Size(max = 50)
     @NotNull

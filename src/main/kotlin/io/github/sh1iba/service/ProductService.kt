@@ -132,7 +132,7 @@ class ProductService(
         category = ProductCategoryResponse(id = category.id, type = category.type),
         name = name,
         description = description,
-        imageName = imageName,
+        imageUrl = imageUrl,
         variants = variants.map { ProductVariantResponse(size = it.size, price = it.price.toFloat(), volume = it.volume) },
         sellerId = seller?.id,
         sellerName = seller?.name

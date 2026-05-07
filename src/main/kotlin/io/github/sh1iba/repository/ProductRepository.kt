@@ -24,7 +24,7 @@ interface ProductRepository : JpaRepository<Product, Int> {
 
     fun findAllBySellerId(sellerId: Long): List<Product>
 
-    fun countByImageName(imageName: String): Long
+    fun countByImageUrl(imageUrl: String): Long
 
     @Query("""
         SELECT p FROM Product p

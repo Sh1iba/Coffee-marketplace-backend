@@ -22,6 +22,6 @@ data class SellerRequest(
     @field:Size(max = 50)
     val category: String,
 
-    @field:Schema(description = "Имя файла логотипа", example = "logo_123.png", required = false)
-    val logoImage: String? = null
+    @field:Schema(description = "URL логотипа магазина", required = false)
+    val logoUrl: String? = null
 )

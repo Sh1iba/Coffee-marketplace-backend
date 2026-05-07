@@ -23,10 +23,10 @@ data class ProductManageRequest(
     @field:Schema(description = "ID категории", example = "1", required = true)
     val categoryId: Int,
 
-    @field:Schema(description = "Имя файла изображения", example = "raf.jpg", required = true)
+    @field:Schema(description = "URL изображения товара", required = true)
     @field:NotBlank
-    @field:Size(max = 50)
-    val imageName: String,
+    @field:Size(max = 500)
+    val imageUrl: String,
 
     @field:Schema(description = "Варианты товара (размер и цена)", required = true)
     @field:NotEmpty

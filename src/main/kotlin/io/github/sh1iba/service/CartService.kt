@@ -38,7 +38,7 @@ class CartService(
                 price = price,
                 quantity = item.quantity,
                 totalPrice = price * item.quantity,
-                imageName = product.imageName
+                imageUrl = product.imageUrl
             )
         }
 
