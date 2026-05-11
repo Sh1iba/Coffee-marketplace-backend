@@ -7,10 +7,14 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import io.github.sh1iba.dto.AdminUserResponse
+import io.github.sh1iba.dto.BranchResponse
+import io.github.sh1iba.dto.CourierResponse
 import io.github.sh1iba.dto.OrderStatusRequest
+import io.github.sh1iba.dto.RejectSellerRequest
 import io.github.sh1iba.dto.RoleChangeRequest
 import io.github.sh1iba.dto.SellerResponse
 import io.github.sh1iba.service.AdminService
+import io.github.sh1iba.service.BranchService
 import io.github.sh1iba.service.OrderService
 
 @RestController
@@ -19,7 +23,8 @@ import io.github.sh1iba.service.OrderService
 @Tag(name = "Администратор", description = "Управление пользователями, магазинами и заказами")
 class AdminController(
     private val adminService: AdminService,
-    private val orderService: OrderService
+    private val orderService: OrderService,
+    private val branchService: BranchService
 ) {
 
     // ── Пользователи ───────────────────────────────────────────────────────
@@ -49,6 +54,34 @@ class AdminController(
     fun getAllSellers(): ResponseEntity<List<SellerResponse>> =
         ResponseEntity.ok(adminService.getAllSellers())
 
+    @Operation(summary = "Магазины на модерации")
+    @GetMapping("/sellers/pending")
+    fun getPendingSellers(): ResponseEntity<List<SellerResponse>> =
+        ResponseEntity.ok(adminService.getPendingSellers())
+
+    @Operation(summary = "Одобрить магазин")
+    @PutMapping("/sellers/{sellerId}/approve")
+    fun approveSeller(@PathVariable sellerId: Long): ResponseEntity<Any> =
+        when (val result = adminService.approveSeller(sellerId)) {
+            is AdminService.AdminResult.Success ->
+                ResponseEntity.ok(mapOf("message" to "Магазин одобрен"))
+            is AdminService.AdminResult.NotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
+        }
+
+    @Operation(summary = "Отклонить магазин")
+    @PutMapping("/sellers/{sellerId}/reject")
+    fun rejectSeller(
+        @PathVariable sellerId: Long,
+        @RequestBody request: RejectSellerRequest
+    ): ResponseEntity<Any> =
+        when (val result = adminService.rejectSeller(sellerId, request.reason)) {
+            is AdminService.AdminResult.Success ->
+                ResponseEntity.ok(mapOf("message" to "Магазин отклонён"))
+            is AdminService.AdminResult.NotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
+        }
+
     @Operation(summary = "Активировать магазин")
     @PutMapping("/sellers/{sellerId}/activate")
     fun activateSeller(@PathVariable sellerId: Long): ResponseEntity<Any> =
@@ -68,6 +101,40 @@ class AdminController(
             is AdminService.AdminResult.NotFound ->
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
         }
+
+    // ── Курьеры ────────────────────────────────────────────────────────────
+
+    @Operation(summary = "Все курьеры")
+    @GetMapping("/couriers")
+    fun getAllCouriers(): ResponseEntity<List<CourierResponse>> =
+        ResponseEntity.ok(adminService.getAllCouriers())
+
+    @Operation(summary = "Переключить доступность курьера")
+    @PutMapping("/couriers/{courierId}/toggle")
+    fun toggleCourier(@PathVariable courierId: Long): ResponseEntity<Any> =
+        when (val result = adminService.toggleCourierAvailability(courierId)) {
+            is AdminService.AdminResult.Success ->
+                ResponseEntity.ok(mapOf("message" to "Статус курьера обновлён"))
+            is AdminService.AdminResult.NotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
+        }
+
+    @Operation(summary = "Снять роль курьера (роль → BUYER)")
+    @DeleteMapping("/couriers/{courierId}")
+    fun removeCourier(@PathVariable courierId: Long): ResponseEntity<Any> =
+        when (val result = adminService.removeCourierRole(courierId)) {
+            is AdminService.AdminResult.Success ->
+                ResponseEntity.ok(mapOf("message" to "Роль курьера снята"))
+            is AdminService.AdminResult.NotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
+        }
+
+    // ── Филиалы ────────────────────────────────────────────────────────────
+
+    @Operation(summary = "Все активные филиалы")
+    @GetMapping("/branches")
+    fun getAllBranches(): ResponseEntity<List<BranchResponse>> =
+        branchService.getAllActiveBranches()
 
     // ── Заказы ─────────────────────────────────────────────────────────────
 

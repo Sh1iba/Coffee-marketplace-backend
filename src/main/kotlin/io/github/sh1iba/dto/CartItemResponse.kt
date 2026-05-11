@@ -23,7 +23,10 @@ data class CartItemResponse(
     val totalPrice: Float,
 
     @field:Schema(description = "URL изображения товара")
-    val imageUrl: String
+    val imageUrl: String,
+
+    @field:Schema(description = "ID магазина")
+    val sellerId: Long? = null
 )
 
 @Schema(description = "Содержимое корзины")

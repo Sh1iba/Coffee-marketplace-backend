@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <!-- Creates a default branch for each existing seller that has no branches yet -->
+    <changeSet id="2026-05-10--05-seed-default-branches" author="zafar">
+        <sql>
+            INSERT INTO branches (seller_id, name, address, city, delivery_fee, min_order_amount, working_hours, is_active)
+            SELECT s.id,
+                   CONCAT(s.name, ' — Главный'),
+                   'Адрес не указан',
+                   'Ташкент',
+                   15000.00,
+                   30000.00,
+                   '09:00–22:00',
+                   TRUE
+            FROM sellers s
+            WHERE NOT EXISTS (
+                SELECT 1 FROM branches b WHERE b.seller_id = s.id
+            );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

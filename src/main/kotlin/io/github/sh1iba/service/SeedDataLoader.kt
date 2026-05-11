@@ -5,6 +5,7 @@ import org.springframework.boot.ApplicationRunner
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import io.github.sh1iba.entity.*
+import io.github.sh1iba.entity.SellerStatus
 import io.github.sh1iba.repository.*
 import java.math.BigDecimal
 
@@ -15,6 +16,7 @@ class SeedDataLoader(
     private val productRepository: ProductRepository,
     private val productCategoryRepository: ProductCategoryRepository,
     private val productVariantRepository: ProductVariantRepository,
+    private val branchRepository: BranchRepository,
     private val imageStorageService: ImageStorageService,
     private val passwordEncoder: PasswordEncoder
 ) : ApplicationRunner {
@@ -24,6 +26,7 @@ class SeedDataLoader(
         seedAdminUser()
         seedCategories()
         val sellers = seedSellers()
+        seedDefaultBranches(sellers)
         val imgs = uploadSeedImages()
         seedProducts(sellers, imgs)
     }
@@ -70,9 +73,37 @@ class SeedDataLoader(
             )
             val seller = sellerRepository.findByUserId(user.id) ?: sellerRepository.save(
                 Seller(user = user, name = s.shopName, description = s.description,
-                    category = s.category, rating = s.rating)
+                    category = s.category, rating = s.rating, status = SellerStatus.APPROVED)
             )
             s.shopName to seller
+        }
+    }
+
+    // ── Филиалы ───────────────────────────────────────────────────────────
+
+    private fun seedDefaultBranches(sellers: Map<String, Seller>) {
+        val cityData = mapOf(
+            "Urban Brew"      to Triple("Urban Brew — Тверская",    "ул. Тверская, 15",       "Москва"),
+            "La Boulangerie"  to Triple("La Boulangerie — Арбат",   "ул. Арбат, 28",           "Москва"),
+            "Fresh Bites"     to Triple("Fresh Bites — Кутузовский","Кутузовский пр-т, 7",    "Москва"),
+            "Spice Route"     to Triple("Spice Route — Пятницкая",  "ул. Пятницкая, 22",       "Москва"),
+            "Green Bowl"      to Triple("Green Bowl — Покровка",    "ул. Покровка, 3",         "Москва")
+        )
+        for ((shopName, seller) in sellers) {
+            if (!branchRepository.existsBySellerId(seller.id)) {
+                val (name, address, city) = cityData[shopName] ?: continue
+                branchRepository.save(
+                    Branch(
+                        seller = seller,
+                        name = name,
+                        address = address,
+                        city = city,
+                        deliveryFee = BigDecimal("199.00"),
+                        minOrderAmount = BigDecimal("500.00"),
+                        workingHours = "09:00–22:00"
+                    )
+                )
+            }
         }
     }
 

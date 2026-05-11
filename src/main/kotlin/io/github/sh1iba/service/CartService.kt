@@ -24,6 +24,7 @@ class CartService(
     private val productService: ProductService
 ) {
 
+    @Transactional
     fun getCart(userId: Long): ResponseEntity<CartSummaryResponse> {
         val items = cartItemRepository.findAllByUserId(userId)
 
@@ -38,7 +39,8 @@ class CartService(
                 price = price,
                 quantity = item.quantity,
                 totalPrice = price * item.quantity,
-                imageUrl = product.imageUrl
+                imageUrl = product.imageUrl,
+                sellerId = product.seller?.id
             )
         }
 

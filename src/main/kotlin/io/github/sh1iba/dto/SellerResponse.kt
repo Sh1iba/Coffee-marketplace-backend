@@ -26,9 +26,21 @@ data class SellerResponse(
     @field:Schema(description = "Активен ли магазин", example = "true")
     val isActive: Boolean,
 
+    @field:Schema(description = "Контактный телефон")
+    val phone: String?,
+
+    @field:Schema(description = "Сайт магазина")
+    val website: String?,
+
     @field:Schema(description = "ID владельца", example = "42")
     val ownerId: Long,
 
     @field:Schema(description = "Имя владельца", example = "Иван Иванов")
-    val ownerName: String
+    val ownerName: String,
+
+    @field:Schema(description = "Статус модерации", example = "PENDING", allowableValues = ["PENDING", "APPROVED", "REJECTED"])
+    val status: String,
+
+    @field:Schema(description = "Причина отклонения (если REJECTED)")
+    val rejectionReason: String? = null
 )

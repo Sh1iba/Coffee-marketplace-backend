@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 
 enum class Role {
-    BUYER, SELLER, ADMIN
+    BUYER, SELLER, ADMIN, COURIER, BRANCH_MANAGER
 }
 
 @Entity
@@ -32,6 +32,6 @@ data class User @JvmOverloads constructor(
     var passwordHash: String = "",
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 10)
+    @Column(name = "role", nullable = false, length = 20)
     var role: Role = Role.BUYER
 )

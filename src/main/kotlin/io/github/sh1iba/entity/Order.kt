@@ -5,8 +5,10 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 enum class OrderStatus {
-    PENDING, CONFIRMED, PROCESSING, READY, DELIVERED, CANCELLED
+    PENDING, CONFIRMED, COOKING, READY_FOR_PICKUP, PICKED_UP, DELIVERING, DELIVERED, CANCELLED
 }
+
+enum class DeliveryType { DELIVERY, PICKUP }
 
 @Entity
 @Table(name = "orders")
@@ -24,8 +26,18 @@ data class Order(
     @Column(name = "delivery_fee", nullable = false)
     var deliveryFee: BigDecimal = BigDecimal.ZERO,
 
-    @Column(name = "delivery_address", nullable = false)
-    val deliveryAddress: String,
+    @Column(name = "delivery_address")
+    val deliveryAddress: String? = null,
+
+    @Column(name = "branch_id")
+    val branchId: Long? = null,
+
+    @Column(name = "courier_id")
+    var courierId: Long? = null,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_type", nullable = false, length = 15)
+    val deliveryType: DeliveryType = DeliveryType.DELIVERY,
 
     @Column(name = "order_date", nullable = false)
     val orderDate: LocalDateTime = LocalDateTime.now(),

@@ -7,6 +7,7 @@ import io.github.sh1iba.entity.Product
 import io.github.sh1iba.entity.ProductVariant
 import io.github.sh1iba.entity.Role
 import io.github.sh1iba.entity.Seller
+import io.github.sh1iba.entity.SellerStatus
 import io.github.sh1iba.repository.*
 
 @Service
@@ -59,7 +60,8 @@ class SellerService(
 
         val saved = sellerRepository.save(
             Seller(user = user, name = request.name, description = request.description,
-                category = request.category, logoUrl = request.logoUrl)
+                category = request.category, logoUrl = request.logoUrl,
+                phone = request.phone, website = request.website)
         )
         return SellerResult.Success(saved.toResponse())
     }
@@ -75,7 +77,8 @@ class SellerService(
 
         val seller = sellerRepository.save(
             Seller(user = user, name = request.name, description = request.description,
-                category = request.category, logoUrl = request.logoUrl)
+                category = request.category, logoUrl = request.logoUrl,
+                phone = request.phone, website = request.website)
         )
 
         user.role = Role.SELLER
@@ -93,11 +96,28 @@ class SellerService(
         seller.description = request.description
         seller.category = request.category
         seller.logoUrl = request.logoUrl
+        seller.phone = request.phone
+        seller.website = request.website
+        return sellerRepository.save(seller).toResponse()
+    }
+
+    fun resubmitSeller(userId: Long, request: SellerRequest): SellerResponse? {
+        val seller = sellerRepository.findByUserId(userId) ?: return null
+        seller.name = request.name
+        seller.description = request.description
+        seller.category = request.category
+        seller.logoUrl = request.logoUrl
+        seller.phone = request.phone
+        seller.website = request.website
+        seller.status = SellerStatus.PENDING
+        seller.rejectionReason = null
         return sellerRepository.save(seller).toResponse()
     }
 
     fun getAllActiveSellers(): List<SellerResponse> =
-        sellerRepository.findAllByIsActiveTrue().map { it.toResponse() }
+        sellerRepository.findAllByStatusAndIsActiveTrue(SellerStatus.APPROVED)
+            .filter { productRepository.countBySellerId(it.id) > 0 }
+            .map { it.toResponse() }
 
     fun getSellerById(id: Long): SellerResponse? =
         sellerRepository.findById(id).orElse(null)?.toResponse()
@@ -184,7 +204,9 @@ class SellerService(
     private fun Seller.toResponse() = SellerResponse(
         id = id, name = name, description = description, category = category,
         logoUrl = logoUrl, rating = rating, isActive = isActive,
-        ownerId = user.id, ownerName = user.name
+        phone = phone, website = website,
+        ownerId = user.id, ownerName = user.name,
+        status = status.name, rejectionReason = rejectionReason
     )
 
     fun Product.toProductResponse() = ProductResponse(

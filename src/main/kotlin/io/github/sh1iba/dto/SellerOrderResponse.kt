@@ -16,8 +16,8 @@ data class SellerOrderResponse(
     @field:Schema(description = "Статус заказа", example = "PENDING")
     val status: OrderStatus,
 
-    @field:Schema(description = "Адрес доставки", example = "ул. Пушкина, д. 10")
-    val deliveryAddress: String,
+    @field:Schema(description = "Адрес доставки (null для самовывоза)")
+    val deliveryAddress: String?,
 
     @field:Schema(description = "Сумма по товарам продавца в этом заказе", example = "690.00")
     val itemsTotal: BigDecimal,
