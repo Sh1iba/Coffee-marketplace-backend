@@ -4,12 +4,18 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import io.github.sh1iba.dto.AdminUserResponse
 import io.github.sh1iba.dto.CourierResponse
+import io.github.sh1iba.dto.ProductCategoryResponse
+import io.github.sh1iba.dto.ProductResponse
+import io.github.sh1iba.dto.ProductVariantResponse
 import io.github.sh1iba.dto.SellerResponse
 import io.github.sh1iba.entity.Courier
+import io.github.sh1iba.entity.Product
+import io.github.sh1iba.entity.ProductStatus
 import io.github.sh1iba.entity.Role
 import io.github.sh1iba.entity.Seller
 import io.github.sh1iba.entity.SellerStatus
 import io.github.sh1iba.repository.CourierRepository
+import io.github.sh1iba.repository.ProductRepository
 import io.github.sh1iba.repository.SellerRepository
 import io.github.sh1iba.repository.UserRepository
 
@@ -17,7 +23,8 @@ import io.github.sh1iba.repository.UserRepository
 class AdminService(
     private val userRepository: UserRepository,
     private val sellerRepository: SellerRepository,
-    private val courierRepository: CourierRepository
+    private val courierRepository: CourierRepository,
+    private val productRepository: ProductRepository
 ) {
 
     sealed class AdminResult {
@@ -102,6 +109,39 @@ class AdminService(
         return AdminResult.Success
     }
 
+    // ── Модерация товаров ──────────────────────────────────────────────────
+
+    fun getPendingProducts(): List<ProductResponse> =
+        productRepository.findAllByStatus(ProductStatus.PENDING).map { it.toProductResponse() }
+
+    fun getSellerProducts(sellerId: Long): List<ProductResponse> =
+        productRepository.findAllBySellerId(sellerId).map { it.toProductResponse() }
+
+    fun approveProduct(productId: Int): AdminResult {
+        val product = productRepository.findById(productId).orElse(null)
+            ?: return AdminResult.NotFound("Товар не найден")
+        product.status = ProductStatus.APPROVED
+        product.rejectionReason = null
+        productRepository.save(product)
+        return AdminResult.Success
+    }
+
+    fun rejectProduct(productId: Int, reason: String): AdminResult {
+        val product = productRepository.findById(productId).orElse(null)
+            ?: return AdminResult.NotFound("Товар не найден")
+        product.status = ProductStatus.REJECTED
+        product.rejectionReason = reason
+        productRepository.save(product)
+        return AdminResult.Success
+    }
+
+    fun deleteProduct(productId: Int): AdminResult {
+        val product = productRepository.findById(productId).orElse(null)
+            ?: return AdminResult.NotFound("Товар не найден")
+        productRepository.delete(product)
+        return AdminResult.Success
+    }
+
     private fun Seller.toSellerResponse() = SellerResponse(
         id = id, name = name, description = description, category = category,
         logoUrl = logoUrl, rating = rating, isActive = isActive,
@@ -113,5 +153,14 @@ class AdminService(
     private fun Courier.toCourierResponse() = CourierResponse(
         id = id, userId = user.id, userName = user.name, userEmail = user.email,
         isAvailable = isAvailable, latitude = latitude, longitude = longitude
+    )
+
+    private fun Product.toProductResponse() = ProductResponse(
+        id = id,
+        category = ProductCategoryResponse(id = category.id, type = category.type),
+        name = name, description = description, imageUrl = imageUrl,
+        variants = variants.map { ProductVariantResponse(size = it.size, price = it.price.toFloat(), volume = it.volume) },
+        sellerId = seller?.id, sellerName = seller?.name,
+        status = status.name, rejectionReason = rejectionReason
     )
 }

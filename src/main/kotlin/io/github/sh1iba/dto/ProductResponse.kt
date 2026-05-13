@@ -26,5 +26,11 @@ data class ProductResponse(
     val sellerId: Long? = null,
 
     @field:Schema(description = "Название магазина продавца", example = "Coffee House")
-    val sellerName: String? = null
+    val sellerName: String? = null,
+
+    @field:Schema(description = "Статус модерации товара", example = "APPROVED")
+    val status: String = "APPROVED",
+
+    @field:Schema(description = "Причина отклонения товара")
+    val rejectionReason: String? = null
 )

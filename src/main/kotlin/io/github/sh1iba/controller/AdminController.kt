@@ -10,6 +10,7 @@ import io.github.sh1iba.dto.AdminUserResponse
 import io.github.sh1iba.dto.BranchResponse
 import io.github.sh1iba.dto.CourierResponse
 import io.github.sh1iba.dto.OrderStatusRequest
+import io.github.sh1iba.dto.ProductResponse
 import io.github.sh1iba.dto.RejectSellerRequest
 import io.github.sh1iba.dto.RoleChangeRequest
 import io.github.sh1iba.dto.SellerResponse
@@ -98,6 +99,51 @@ class AdminController(
         when (val result = adminService.deactivateSeller(sellerId)) {
             is AdminService.AdminResult.Success ->
                 ResponseEntity.ok(mapOf("message" to "Магазин деактивирован"))
+            is AdminService.AdminResult.NotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
+        }
+
+    // ── Товары ────────────────────────────────────────────────────────────
+
+    @Operation(summary = "Все товары на модерации (PENDING)")
+    @GetMapping("/products/pending")
+    fun getPendingProducts(): ResponseEntity<List<ProductResponse>> =
+        ResponseEntity.ok(adminService.getPendingProducts())
+
+    @Operation(summary = "Товары магазина (все статусы)")
+    @GetMapping("/sellers/{sellerId}/products")
+    fun getSellerProducts(@PathVariable sellerId: Long): ResponseEntity<List<ProductResponse>> =
+        ResponseEntity.ok(adminService.getSellerProducts(sellerId))
+
+    @Operation(summary = "Одобрить товар")
+    @PutMapping("/products/{productId}/approve")
+    fun approveProduct(@PathVariable productId: Int): ResponseEntity<Any> =
+        when (val result = adminService.approveProduct(productId)) {
+            is AdminService.AdminResult.Success ->
+                ResponseEntity.ok(mapOf("message" to "Товар одобрен"))
+            is AdminService.AdminResult.NotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
+        }
+
+    @Operation(summary = "Отклонить товар")
+    @PutMapping("/products/{productId}/reject")
+    fun rejectProduct(
+        @PathVariable productId: Int,
+        @RequestBody request: RejectSellerRequest
+    ): ResponseEntity<Any> =
+        when (val result = adminService.rejectProduct(productId, request.reason)) {
+            is AdminService.AdminResult.Success ->
+                ResponseEntity.ok(mapOf("message" to "Товар отклонён"))
+            is AdminService.AdminResult.NotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
+        }
+
+    @Operation(summary = "Удалить товар")
+    @DeleteMapping("/products/{productId}")
+    fun deleteProduct(@PathVariable productId: Int): ResponseEntity<Any> =
+        when (val result = adminService.deleteProduct(productId)) {
+            is AdminService.AdminResult.Success ->
+                ResponseEntity.ok(mapOf("message" to "Товар удалён"))
             is AdminService.AdminResult.NotFound ->
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
         }

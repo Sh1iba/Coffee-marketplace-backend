@@ -37,5 +37,7 @@
     <include file="v-1.0/2026-05-11--02-create-branch-managers.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-05-11--03-add-seller-moderation.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-05-11--04-add-seller-contacts.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-05-13--01-add-product-moderation.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-05-13--02-widen-price-column.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

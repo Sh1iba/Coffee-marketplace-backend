@@ -10,7 +10,10 @@ import io.github.sh1iba.dto.ProductResponse
 import io.github.sh1iba.dto.ProductVariantResponse
 import io.github.sh1iba.entity.InteractionType
 import io.github.sh1iba.entity.Product
+import io.github.sh1iba.entity.ProductStatus
+import io.github.sh1iba.entity.SellerStatus
 import io.github.sh1iba.entity.UserProductInteraction
+import io.github.sh1iba.repository.BranchRepository
 import io.github.sh1iba.repository.OrderItemRepository
 import io.github.sh1iba.repository.ProductCategoryRepository
 import io.github.sh1iba.repository.ProductRepository
@@ -24,7 +27,8 @@ class ProductService(
     private val productCategoryRepository: ProductCategoryRepository,
     private val productVariantRepository: ProductVariantRepository,
     private val interactionRepository: UserProductInteractionRepository,
-    private val orderItemRepository: OrderItemRepository
+    private val orderItemRepository: OrderItemRepository,
+    private val branchRepository: BranchRepository
 ) {
 
     fun getAllCategories(): ResponseEntity<List<ProductCategoryResponse>> =
@@ -83,11 +87,12 @@ class ProductService(
             .map { it.first }
 
         var products = scored.mapNotNull { productRepository.findById(it).orElse(null) }
+            .filter { it.isCatalogVisible() }
 
         if (products.size < limit) {
             val existingIds = products.map { it.id }.toSet()
             val filler = productRepository.findAll(Sort.by("id").descending())
-                .filter { it.id !in existingIds }
+                .filter { it.id !in existingIds && it.isCatalogVisible() }
                 .take(limit - products.size)
             products = products + filler
         }
@@ -119,12 +124,20 @@ class ProductService(
         if (result.size < limit) {
             val existingIds = result.map { it.id }.toSet() + interactedIds.toSet()
             val filler = productRepository.findAll(Sort.by("id").descending())
-                .filter { it.id !in existingIds }
+                .filter { it.id !in existingIds && it.isCatalogVisible() }
                 .take(limit - result.size)
             result = result + filler
         }
 
         return ResponseEntity.ok(result.map { it.toResponse() })
+    }
+
+    private fun Product.isCatalogVisible(): Boolean {
+        val s = seller ?: return false
+        if (s.status != SellerStatus.APPROVED || !s.isActive) return false
+        if (!branchRepository.existsBySellerId(s.id)) return false
+        if (productRepository.countBySellerIdAndStatus(s.id, ProductStatus.APPROVED) < 5) return false
+        return status == ProductStatus.APPROVED
     }
 
     fun Product.toResponse() = ProductResponse(
@@ -135,6 +148,8 @@ class ProductService(
         imageUrl = imageUrl,
         variants = variants.map { ProductVariantResponse(size = it.size, price = it.price.toFloat(), volume = it.volume) },
         sellerId = seller?.id,
-        sellerName = seller?.name
+        sellerName = seller?.name,
+        status = status.name,
+        rejectionReason = rejectionReason
     )
 }

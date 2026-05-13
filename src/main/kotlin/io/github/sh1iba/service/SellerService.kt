@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import io.github.sh1iba.dto.*
 import io.github.sh1iba.entity.Product
+import io.github.sh1iba.entity.ProductStatus
 import io.github.sh1iba.entity.ProductVariant
 import io.github.sh1iba.entity.Role
 import io.github.sh1iba.entity.Seller
@@ -17,7 +18,8 @@ class SellerService(
     private val productRepository: ProductRepository,
     private val productCategoryRepository: ProductCategoryRepository,
     private val productVariantRepository: ProductVariantRepository,
-    private val imageStorageService: ImageStorageService
+    private val imageStorageService: ImageStorageService,
+    private val branchRepository: BranchRepository
 ) {
 
     // ── Результаты операций ────────────────────────────────────────────────
@@ -116,7 +118,10 @@ class SellerService(
 
     fun getAllActiveSellers(): List<SellerResponse> =
         sellerRepository.findAllByStatusAndIsActiveTrue(SellerStatus.APPROVED)
-            .filter { productRepository.countBySellerId(it.id) > 0 }
+            .filter {
+                branchRepository.existsBySellerId(it.id) &&
+                productRepository.countBySellerIdAndStatus(it.id, ProductStatus.APPROVED) >= 5
+            }
             .map { it.toResponse() }
 
     fun getSellerById(id: Long): SellerResponse? =
@@ -139,7 +144,8 @@ class SellerService(
 
         val product = productRepository.save(
             Product(category = category, seller = seller, name = request.name,
-                description = request.description, imageUrl = request.imageUrl)
+                description = request.description, imageUrl = request.imageUrl,
+                status = ProductStatus.PENDING)
         )
 
         val variants = productVariantRepository.saveAll(
@@ -168,6 +174,8 @@ class SellerService(
         product.description = request.description
         product.imageUrl = request.imageUrl
         product.category = category
+        product.status = ProductStatus.PENDING
+        product.rejectionReason = null
         productRepository.save(product)
 
         productVariantRepository.deleteAllByProductId(productId)
@@ -214,6 +222,7 @@ class SellerService(
         category = ProductCategoryResponse(id = category.id, type = category.type),
         name = name, description = description, imageUrl = imageUrl,
         variants = variants.map { ProductVariantResponse(size = it.size, price = it.price.toFloat(), volume = it.volume) },
-        sellerId = seller?.id, sellerName = seller?.name
+        sellerId = seller?.id, sellerName = seller?.name,
+        status = status.name, rejectionReason = rejectionReason
     )
 }

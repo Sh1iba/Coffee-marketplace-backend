@@ -36,6 +36,14 @@ data class Product @JvmOverloads constructor(
     @Column(name = "image_url", nullable = false, length = 500)
     var imageUrl: String = "",
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 10)
+    var status: ProductStatus = ProductStatus.PENDING,
+
+    @Size(max = 500)
+    @Column(name = "rejection_reason", length = 500)
+    var rejectionReason: String? = null,
+
     @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     var variants: MutableList<ProductVariant> = mutableListOf()
 )
