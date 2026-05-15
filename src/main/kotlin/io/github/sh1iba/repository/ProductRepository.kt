@@ -19,7 +19,7 @@ interface ProductRepository : JpaRepository<Product, Int> {
         AND p.seller IS NOT NULL
         AND p.seller.status = 'APPROVED'
         AND p.seller.isActive = true
-        AND EXISTS (SELECT b FROM Branch b WHERE b.seller = p.seller)
+        AND EXISTS (SELECT b FROM Branch b WHERE b.seller = p.seller AND b.status = 'APPROVED')
         AND (SELECT COUNT(p2) FROM Product p2 WHERE p2.seller = p.seller AND p2.status = 'APPROVED') >= 5
     """)
     fun findWithFilters(
@@ -49,7 +49,7 @@ interface ProductRepository : JpaRepository<Product, Int> {
         AND p.seller IS NOT NULL
         AND p.seller.status = 'APPROVED'
         AND p.seller.isActive = true
-        AND EXISTS (SELECT b FROM Branch b WHERE b.seller = p.seller)
+        AND EXISTS (SELECT b FROM Branch b WHERE b.seller = p.seller AND b.status = 'APPROVED')
         AND (SELECT COUNT(p2) FROM Product p2 WHERE p2.seller = p.seller AND p2.status = 'APPROVED') >= 5
     """)
     fun findByCategoryIdInAndIdNotIn(

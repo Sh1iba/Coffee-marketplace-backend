@@ -3,17 +3,22 @@ package io.github.sh1iba.service
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import io.github.sh1iba.dto.AdminUserResponse
+import io.github.sh1iba.dto.BranchResponse
 import io.github.sh1iba.dto.CourierResponse
 import io.github.sh1iba.dto.ProductCategoryResponse
 import io.github.sh1iba.dto.ProductResponse
 import io.github.sh1iba.dto.ProductVariantResponse
 import io.github.sh1iba.dto.SellerResponse
+import io.github.sh1iba.entity.Branch
+import io.github.sh1iba.entity.BranchStatus
 import io.github.sh1iba.entity.Courier
 import io.github.sh1iba.entity.Product
 import io.github.sh1iba.entity.ProductStatus
 import io.github.sh1iba.entity.Role
 import io.github.sh1iba.entity.Seller
 import io.github.sh1iba.entity.SellerStatus
+import io.github.sh1iba.repository.BranchManagerRepository
+import io.github.sh1iba.repository.BranchRepository
 import io.github.sh1iba.repository.CourierRepository
 import io.github.sh1iba.repository.ProductRepository
 import io.github.sh1iba.repository.SellerRepository
@@ -24,7 +29,9 @@ class AdminService(
     private val userRepository: UserRepository,
     private val sellerRepository: SellerRepository,
     private val courierRepository: CourierRepository,
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    private val branchRepository: BranchRepository,
+    private val branchManagerRepository: BranchManagerRepository
 ) {
 
     sealed class AdminResult {
@@ -142,6 +149,34 @@ class AdminService(
         return AdminResult.Success
     }
 
+    // ── Модерация филиалов ─────────────────────────────────────────────────
+
+    fun getPendingBranches(): List<BranchResponse> =
+        branchRepository.findAllByStatus(BranchStatus.PENDING).map { branch ->
+            val managerEmail = branchManagerRepository.findAllByBranchId(branch.id).firstOrNull()?.user?.email
+            branch.toBranchResponse(managerEmail)
+        }
+
+    @Transactional
+    fun approveBranch(branchId: Long): AdminResult {
+        val branch = branchRepository.findById(branchId).orElse(null)
+            ?: return AdminResult.NotFound("Филиал не найден")
+        branch.status = BranchStatus.APPROVED
+        branch.rejectionReason = null
+        branchRepository.save(branch)
+        return AdminResult.Success
+    }
+
+    @Transactional
+    fun rejectBranch(branchId: Long, reason: String): AdminResult {
+        val branch = branchRepository.findById(branchId).orElse(null)
+            ?: return AdminResult.NotFound("Филиал не найден")
+        branch.status = BranchStatus.REJECTED
+        branch.rejectionReason = reason
+        branchRepository.save(branch)
+        return AdminResult.Success
+    }
+
     private fun Seller.toSellerResponse() = SellerResponse(
         id = id, name = name, description = description, category = category,
         logoUrl = logoUrl, rating = rating, isActive = isActive,
@@ -153,6 +188,15 @@ class AdminService(
     private fun Courier.toCourierResponse() = CourierResponse(
         id = id, userId = user.id, userName = user.name, userEmail = user.email,
         isAvailable = isAvailable, latitude = latitude, longitude = longitude
+    )
+
+    private fun Branch.toBranchResponse(managerEmail: String?) = BranchResponse(
+        id = id, sellerId = seller.id, sellerName = seller.name,
+        name = name, address = address, city = city,
+        latitude = latitude, longitude = longitude,
+        deliveryFee = deliveryFee, minOrderAmount = minOrderAmount,
+        workingHours = workingHours, isActive = isActive,
+        managerEmail = managerEmail, status = status.name, rejectionReason = rejectionReason
     )
 
     private fun Product.toProductResponse() = ProductResponse(

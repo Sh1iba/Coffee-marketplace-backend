@@ -9,6 +9,7 @@ import io.github.sh1iba.dto.BranchRequest
 import io.github.sh1iba.dto.BranchResponse
 import io.github.sh1iba.entity.Branch
 import io.github.sh1iba.entity.BranchManager
+import io.github.sh1iba.entity.BranchStatus
 import io.github.sh1iba.entity.Role
 import io.github.sh1iba.entity.User
 import io.github.sh1iba.repository.BranchManagerRepository
@@ -49,7 +50,8 @@ class BranchService(
                 longitude = request.longitude,
                 deliveryFee = request.deliveryFee,
                 minOrderAmount = request.minOrderAmount,
-                workingHours = request.workingHours
+                workingHours = request.workingHours,
+                status = BranchStatus.PENDING
             )
         )
 
@@ -118,18 +120,25 @@ class BranchService(
     @Transactional
     fun getBranchesBySeller(sellerId: Long): ResponseEntity<List<BranchResponse>> =
         ResponseEntity.ok(
-            branchRepository.findAllBySellerIdAndIsActiveTrue(sellerId).map { it.toResponse(null) }
+            branchRepository.findAllBySellerIdAndIsActiveTrueAndStatus(sellerId, BranchStatus.APPROVED)
+                .map { it.toResponse(null) }
         )
 
     @Transactional
     fun getBranchesByCity(city: String): ResponseEntity<List<BranchResponse>> =
         ResponseEntity.ok(
-            branchRepository.findAllByCityIgnoreCaseAndIsActiveTrue(city).map { it.toResponse(null) }
+            branchRepository.findAllByCityIgnoreCaseAndIsActiveTrue(city)
+                .filter { it.status == BranchStatus.APPROVED }
+                .map { it.toResponse(null) }
         )
 
     @Transactional
     fun getAllActiveBranches(): ResponseEntity<List<BranchResponse>> =
-        ResponseEntity.ok(branchRepository.findAllByIsActiveTrue().map { it.toResponse(null) })
+        ResponseEntity.ok(
+            branchRepository.findAllByIsActiveTrue()
+                .filter { it.status == BranchStatus.APPROVED }
+                .map { it.toResponse(null) }
+        )
 
     @Transactional
     fun getBranchById(branchId: Long): BranchResponse? =
@@ -148,6 +157,8 @@ class BranchService(
         minOrderAmount = minOrderAmount,
         workingHours = workingHours,
         isActive = isActive,
-        managerEmail = managerEmail
+        managerEmail = managerEmail,
+        status = status.name,
+        rejectionReason = rejectionReason
     )
 }

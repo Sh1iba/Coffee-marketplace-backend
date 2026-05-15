@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+
+    <changeSet id="2026-05-15--01-fix-product-categories" author="zafar">
+
+        <!-- Добавляем новые категории -->
+        <sql>INSERT INTO product_categories (type) SELECT 'Чай'     WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Чай')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Супы'    WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Супы')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Закуски' WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Закуски')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Пицца'   WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Пицца')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Паста'   WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Паста')</sql>
+        <sql>INSERT INTO product_categories (type) SELECT 'Боулы'   WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE type='Боулы')</sql>
+
+        <!-- Перекладываем чайные/латте напитки из Специи в Чай -->
+        <sql>
+            UPDATE products
+            SET type_id = (SELECT id FROM product_categories WHERE type = 'Чай')
+            WHERE name IN ('Масала Чай', 'Куркума Латте', 'Матча Латте', 'Чай Карк')
+              AND type_id = (SELECT id FROM product_categories WHERE type = 'Специи')
+        </sql>
+
+    </changeSet>
+
+</databaseChangeLog>

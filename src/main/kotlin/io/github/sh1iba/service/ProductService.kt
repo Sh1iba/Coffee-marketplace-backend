@@ -8,6 +8,7 @@ import io.github.sh1iba.dto.PagedResponse
 import io.github.sh1iba.dto.ProductCategoryResponse
 import io.github.sh1iba.dto.ProductResponse
 import io.github.sh1iba.dto.ProductVariantResponse
+import io.github.sh1iba.entity.BranchStatus
 import io.github.sh1iba.entity.InteractionType
 import io.github.sh1iba.entity.Product
 import io.github.sh1iba.entity.ProductStatus
@@ -135,7 +136,7 @@ class ProductService(
     private fun Product.isCatalogVisible(): Boolean {
         val s = seller ?: return false
         if (s.status != SellerStatus.APPROVED || !s.isActive) return false
-        if (!branchRepository.existsBySellerId(s.id)) return false
+        if (!branchRepository.existsBySellerIdAndStatus(s.id, BranchStatus.APPROVED)) return false
         if (productRepository.countBySellerIdAndStatus(s.id, ProductStatus.APPROVED) < 5) return false
         return status == ProductStatus.APPROVED
     }

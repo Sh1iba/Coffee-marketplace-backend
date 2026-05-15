@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import java.math.BigDecimal
+import io.github.sh1iba.entity.BranchStatus
 
 @Entity
 @Table(name = "branches")
@@ -50,5 +51,13 @@ data class Branch @JvmOverloads constructor(
     var workingHours: String? = null,
 
     @Column(name = "is_active", nullable = false)
-    var isActive: Boolean = true
+    var isActive: Boolean = true,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 10)
+    var status: BranchStatus = BranchStatus.PENDING,
+
+    @Size(max = 500)
+    @Column(name = "rejection_reason", length = 500)
+    var rejectionReason: String? = null
 )

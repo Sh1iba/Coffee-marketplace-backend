@@ -182,6 +182,34 @@ class AdminController(
     fun getAllBranches(): ResponseEntity<List<BranchResponse>> =
         branchService.getAllActiveBranches()
 
+    @Operation(summary = "Филиалы на модерации (PENDING)")
+    @GetMapping("/branches/pending")
+    fun getPendingBranches(): ResponseEntity<List<BranchResponse>> =
+        ResponseEntity.ok(adminService.getPendingBranches())
+
+    @Operation(summary = "Одобрить филиал")
+    @PutMapping("/branches/{branchId}/approve")
+    fun approveBranch(@PathVariable branchId: Long): ResponseEntity<Any> =
+        when (val result = adminService.approveBranch(branchId)) {
+            is AdminService.AdminResult.Success ->
+                ResponseEntity.ok(mapOf("message" to "Филиал одобрен"))
+            is AdminService.AdminResult.NotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
+        }
+
+    @Operation(summary = "Отклонить филиал")
+    @PutMapping("/branches/{branchId}/reject")
+    fun rejectBranch(
+        @PathVariable branchId: Long,
+        @RequestBody request: RejectSellerRequest
+    ): ResponseEntity<Any> =
+        when (val result = adminService.rejectBranch(branchId, request.reason)) {
+            is AdminService.AdminResult.Success ->
+                ResponseEntity.ok(mapOf("message" to "Филиал отклонён"))
+            is AdminService.AdminResult.NotFound ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to result.message))
+        }
+
     // ── Заказы ─────────────────────────────────────────────────────────────
 
     @Operation(summary = "Изменить статус заказа")

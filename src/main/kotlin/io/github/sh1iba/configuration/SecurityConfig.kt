@@ -31,6 +31,7 @@ class SecurityConfig(
                     // Публичные эндпоинты
                     .requestMatchers(
                         "/api/auth/**",
+                        "/api/geocode/**",
                         "/api/sellers",
                         "/api/sellers/*/branches",
                         "/api/reviews/seller/*",

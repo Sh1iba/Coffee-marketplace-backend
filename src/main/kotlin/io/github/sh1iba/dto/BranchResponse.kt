@@ -42,5 +42,11 @@ data class BranchResponse(
     val isActive: Boolean,
 
     @field:Schema(description = "Email менеджера филиала")
-    val managerEmail: String?
+    val managerEmail: String?,
+
+    @field:Schema(description = "Статус модерации", example = "PENDING")
+    val status: String = "PENDING",
+
+    @field:Schema(description = "Причина отклонения")
+    val rejectionReason: String? = null
 )
