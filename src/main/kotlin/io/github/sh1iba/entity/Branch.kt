@@ -59,5 +59,13 @@ data class Branch @JvmOverloads constructor(
 
     @Size(max = 500)
     @Column(name = "rejection_reason", length = 500)
-    var rejectionReason: String? = null
+    var rejectionReason: String? = null,
+
+    @Size(max = 150)
+    @Column(name = "email", length = 150, unique = true)
+    var email: String? = null,
+
+    @Size(max = 255)
+    @Column(name = "password_hash", length = 255)
+    var passwordHash: String? = null
 )

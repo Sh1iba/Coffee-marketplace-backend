@@ -73,33 +73,36 @@ class BranchManagerService(
     }
 
     @Transactional
-    fun getMyProfile(userId: Long): ResponseEntity<Any> {
-        val manager = branchManagerRepository.findByUserId(userId)
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to "Профиль менеджера не найден"))
-        return ResponseEntity.ok(manager.toResponse())
+    fun getMyProfile(branchId: Long): ResponseEntity<Any> {
+        val branch = branchRepository.findById(branchId).orElse(null)
+            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to "Филиал не найден"))
+        return ResponseEntity.ok(
+            mapOf(
+                "branchId" to branch.id,
+                "branchName" to branch.name,
+                "branchAddress" to branch.address,
+                "branchCity" to branch.city
+            )
+        )
     }
 
     @Transactional
-    fun getBranchOrders(userId: Long): ResponseEntity<List<SellerOrderResponse>> {
-        val manager = branchManagerRepository.findByUserId(userId)
-            ?: return ResponseEntity.ok(emptyList())
-        return ResponseEntity.ok(orderService.getOrdersForBranch(manager.branch.id))
+    fun getBranchOrders(branchId: Long): ResponseEntity<List<SellerOrderResponse>> {
+        return ResponseEntity.ok(orderService.getOrdersForBranch(branchId))
     }
 
     @Transactional
-    fun updateOrderStatus(userId: Long, orderId: Long, status: OrderStatus): ResponseEntity<Any> {
-        val manager = branchManagerRepository.findByUserId(userId)
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to "Профиль менеджера не найден"))
+    fun updateOrderStatus(branchId: Long, orderId: Long, status: OrderStatus): ResponseEntity<Any> {
         val order = orderRepository.findById(orderId).orElse(null)
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("message" to "Заказ не найден"))
-        if (order.branchId != manager.branch.id)
+        if (order.branchId != branchId)
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(mapOf("message" to "Этот заказ не принадлежит вашему филиалу"))
 
-        val allowed = setOf(OrderStatus.CONFIRMED, OrderStatus.COOKING, OrderStatus.READY_FOR_PICKUP)
+        val allowed = setOf(OrderStatus.CONFIRMED, OrderStatus.COOKING, OrderStatus.READY_FOR_PICKUP, OrderStatus.DELIVERED)
         if (status !in allowed)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(mapOf("message" to "Менеджер может устанавливать только: CONFIRMED, COOKING, READY_FOR_PICKUP"))
+                .body(mapOf("message" to "Менеджер может устанавливать только: CONFIRMED, COOKING, READY_FOR_PICKUP, DELIVERED"))
 
         order.status = status
         orderRepository.save(order)

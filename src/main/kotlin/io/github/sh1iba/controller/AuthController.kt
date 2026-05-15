@@ -14,13 +14,15 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import io.github.sh1iba.dto.*
+import io.github.sh1iba.service.BranchAuthService
 import io.github.sh1iba.service.UserService
 
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Аутентификация и регистрация", description = "Эндпоинты для входа и регистрации")
 class AuthController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val branchAuthService: BranchAuthService
 ) {
 
     @Operation(
@@ -95,4 +97,10 @@ class AuthController(
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result.error)
         }
     }
+
+    @Operation(summary = "Вход для филиала", description = "Возвращает JWT токен для сотрудника филиала")
+    @PostMapping("/branch-login")
+    fun branchLogin(
+        @Valid @RequestBody request: BranchLoginRequest
+    ): ResponseEntity<Any> = branchAuthService.login(request)
 }

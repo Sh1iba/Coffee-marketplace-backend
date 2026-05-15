@@ -41,5 +41,6 @@
     <include file="v-1.0/2026-05-13--02-widen-price-column.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-05-13--03-add-branch-moderation.xml" relativeToChangelogFile="true"/>
     <include file="v-1.0/2026-05-15--01-fix-product-categories.xml" relativeToChangelogFile="true"/>
+    <include file="v-1.0/2026-05-15--02-add-branch-credentials.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

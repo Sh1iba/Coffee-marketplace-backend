@@ -181,6 +181,7 @@ class OrderService(
                 orderId = orderId,
                 orderDate = order.orderDate,
                 status = order.status,
+                deliveryType = order.deliveryType.name,
                 deliveryAddress = order.deliveryAddress,
                 itemsTotal = items.sumOf { it.totalPrice },
                 items = items.map {
@@ -202,6 +203,7 @@ class OrderService(
                 orderId = order.id,
                 orderDate = order.orderDate,
                 status = order.status,
+                deliveryType = order.deliveryType.name,
                 deliveryAddress = order.deliveryAddress,
                 itemsTotal = items.sumOf { it.totalPrice },
                 items = items.map {

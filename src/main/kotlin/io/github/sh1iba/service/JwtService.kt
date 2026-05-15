@@ -17,22 +17,35 @@ class JwtService(
         return Jwts.builder()
             .subject(userDetails.username)
             .issuedAt(Date())
-            .expiration(Date(System.currentTimeMillis() + 604800000 )) // 7 дней
+            .expiration(Date(System.currentTimeMillis() + 604800000))
             .signWith(secretKey)
             .compact()
     }
 
-    fun extractUsername(token: String): String {
+    fun generateBranchToken(branchId: Long): String {
+        return Jwts.builder()
+            .subject("branch:$branchId")
+            .issuedAt(Date())
+            .expiration(Date(System.currentTimeMillis() + 604800000))
+            .signWith(secretKey)
+            .compact()
+    }
+
+    fun extractSubject(token: String): String {
         return jwtParser
             .parseSignedClaims(token)
             .payload
             .subject
     }
 
+    fun extractUsername(token: String): String = extractSubject(token)
+
     fun isTokenValid(token: String, userDetails: UserDetails): Boolean {
-        val username = extractUsername(token)
+        val username = extractSubject(token)
         return username == userDetails.username && !isTokenExpired(token)
     }
+
+    fun isTokenValid(token: String): Boolean = !isTokenExpired(token)
 
     private fun isTokenExpired(token: String): Boolean {
         return jwtParser

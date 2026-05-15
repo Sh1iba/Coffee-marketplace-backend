@@ -22,13 +22,38 @@ class SeedDataLoader(
 ) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments) {
-        if (sellerRepository.count() > 0) return
+        if (sellerRepository.count() > 0) {
+            ensureBranchCredentials()
+            return
+        }
         seedAdminUser()
         seedCategories()
         val sellers = seedSellers()
         seedDefaultBranches(sellers)
         val imgs = uploadSeedImages()
         seedProducts(sellers, imgs)
+    }
+
+    private fun ensureBranchCredentials() {
+        val emailMap = mapOf(
+            "Urban Brew"     to "urbanbrew.branch@mail.ru",
+            "La Boulangerie" to "boulangerie.branch@mail.ru",
+            "Fresh Bites"    to "freshbites.branch@mail.ru",
+            "Spice Route"    to "spiceroute.branch@mail.ru",
+            "Green Bowl"     to "greenbowl.branch@mail.ru"
+        )
+        val branchPassword = passwordEncoder.encode("branch1")
+        branchRepository.findAllWithSeller().forEach { branch ->
+            if (branch.email == null) {
+                val email = emailMap.entries
+                    .find { (k, _) -> branch.seller.name.contains(k, ignoreCase = true) }?.value
+                if (email != null && branchRepository.findByEmail(email) == null) {
+                    branch.email = email
+                    branch.passwordHash = branchPassword
+                    branchRepository.save(branch)
+                }
+            }
+        }
     }
 
     private fun seedAdminUser() {
@@ -81,26 +106,34 @@ class SeedDataLoader(
 
     // ── Филиалы ───────────────────────────────────────────────────────────
 
+    private data class BranchSeed(
+        val name: String, val address: String, val city: String,
+        val email: String
+    )
+
     private fun seedDefaultBranches(sellers: Map<String, Seller>) {
+        val branchPassword = passwordEncoder.encode("branch1")
         val cityData = mapOf(
-            "Urban Brew"      to Triple("Urban Brew — Тверская",    "ул. Тверская, 15",       "Москва"),
-            "La Boulangerie"  to Triple("La Boulangerie — Арбат",   "ул. Арбат, 28",           "Москва"),
-            "Fresh Bites"     to Triple("Fresh Bites — Кутузовский","Кутузовский пр-т, 7",    "Москва"),
-            "Spice Route"     to Triple("Spice Route — Пятницкая",  "ул. Пятницкая, 22",       "Москва"),
-            "Green Bowl"      to Triple("Green Bowl — Покровка",    "ул. Покровка, 3",         "Москва")
+            "Urban Brew"      to BranchSeed("Urban Brew — Тверская",    "ул. Тверская, 15",       "Москва", "urbanbrew.branch@mail.ru"),
+            "La Boulangerie"  to BranchSeed("La Boulangerie — Арбат",   "ул. Арбат, 28",           "Москва", "boulangerie.branch@mail.ru"),
+            "Fresh Bites"     to BranchSeed("Fresh Bites — Кутузовский","Кутузовский пр-т, 7",    "Москва", "freshbites.branch@mail.ru"),
+            "Spice Route"     to BranchSeed("Spice Route — Пятницкая",  "ул. Пятницкая, 22",       "Москва", "spiceroute.branch@mail.ru"),
+            "Green Bowl"      to BranchSeed("Green Bowl — Покровка",    "ул. Покровка, 3",         "Москва", "greenbowl.branch@mail.ru")
         )
         for ((shopName, seller) in sellers) {
             if (!branchRepository.existsBySellerId(seller.id)) {
-                val (name, address, city) = cityData[shopName] ?: continue
+                val seed = cityData[shopName] ?: continue
                 branchRepository.save(
                     Branch(
                         seller = seller,
-                        name = name,
-                        address = address,
-                        city = city,
+                        name = seed.name,
+                        address = seed.address,
+                        city = seed.city,
                         deliveryFee = BigDecimal("199.00"),
                         minOrderAmount = BigDecimal("500.00"),
-                        workingHours = "09:00–22:00"
+                        workingHours = "09:00–22:00",
+                        email = seed.email,
+                        passwordHash = branchPassword
                     )
                 )
             }

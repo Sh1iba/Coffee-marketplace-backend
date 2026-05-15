@@ -16,6 +16,9 @@ data class SellerOrderResponse(
     @field:Schema(description = "Статус заказа", example = "PENDING")
     val status: OrderStatus,
 
+    @field:Schema(description = "Тип доставки: DELIVERY или PICKUP")
+    val deliveryType: String,
+
     @field:Schema(description = "Адрес доставки (null для самовывоза)")
     val deliveryAddress: String?,
 
